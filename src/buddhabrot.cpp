@@ -7,28 +7,39 @@
 ///
 //===========================================================================//
 
-#include <Cell.hpp>
+#include "Cell.hpp"
 
-//#include <GL/gl.h>
+#ifdef __APPLE__
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
+
+#define SCREEN_WIDTH 701
 
 #include <iostream>
 #include <stdio.h>
 #include <vector>
 
+void displayCallback();
+
 int main(int argc, char **argv) {
 	unsigned int iterations = 500;
 
-	unsigned int screenWidth = 701;
-
 	double realDiff = 3.5;
 
-	std::pair<double, double> min = { -2.5, -1.75 }; // @suppress("Invalid arguments")
-	std::pair<double, double> max = { min.first + realDiff, min.second // @suppress("Invalid arguments")
+    std::pair<double, double> min = { -2.5, -1.75 };
+	std::pair<double, double> max = { min.first + realDiff, min.second
 			+ realDiff };
 
 	unsigned int cellsPerRow = 35;
 
-	double cellImageWidth = screenWidth / cellsPerRow;
+	double cellImageWidth = SCREEN_WIDTH / cellsPerRow;
 	double cellRealWidth = realDiff / cellsPerRow;
 
 	std::vector<std::vector<Cell*>> cells;
@@ -67,7 +78,18 @@ int main(int argc, char **argv) {
 
 	std::cout << maxCount << std::endl;
 
-//	glutInit(&argc, argv);
+	glutInit(&argc, argv);
+    glutInitWindowSize(SCREEN_WIDTH, SCREEN_WIDTH);
+    glutInitDisplayMode(GLUT_RGBA);
+    glutCreateWindow("Buddhabrot");
+    
+    glutDisplayFunc(displayCallback);
+    
+    glutMainLoop();
 
 	return 0;
+}
+
+void displayCallback() {
+    glutSwapBuffers();
 }
