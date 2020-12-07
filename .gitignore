@@ -1,0 +1,11 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Builds
+/build
+/Release
+
+# Misc.
+.DS_Store
+
+# Final
+!.gitignore
