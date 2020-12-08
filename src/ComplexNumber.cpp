@@ -18,12 +18,12 @@ ComplexNumber ComplexNumber::operator+(const ComplexNumber &c) {
 }
 
 ComplexNumber ComplexNumber::operator*(const ComplexNumber &c) {
-    double oldReal = real;
+    long double oldReal = real;
     real = real * c.real - imag * c.imag;
     imag = 2 * oldReal * imag;
 	return *this;
 }
 
-double ComplexNumber::abs() {
+long double ComplexNumber::abs() {
 	return hypot(real, imag);
 }

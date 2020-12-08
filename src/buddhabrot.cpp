@@ -27,10 +27,10 @@
 #include <thread>
 #include <vector>
 
-#define GL_CANVAS_MIN_X double(-1.0)
-#define GL_CANVAS_MAX_X double(1.0)
-#define GL_CANVAS_MIN_Y double(-1.0)
-#define GL_CANVAS_MAX_Y double(1.0)
+static const long double GL_CANVAS_MIN_X = -1.0;
+static const long double GL_CANVAS_MAX_X = 1.0;
+static const long double GL_CANVAS_MIN_Y = -1.0;
+//static const long double GL_CANVAS_MAX_Y = 1.0;
 
 void displayCallback();
 static void showUsage(std::string name);
@@ -114,22 +114,22 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
     
     // calculate buddhabrot
-    double realDiff = 3.5;
+    long double realDiff = 3.5;
 
-    std::pair<double, double> min = { -2.5, -1.75 };
-	std::pair<double, double> max = { min.first + realDiff, min.second + realDiff };
+    std::pair<long double, long double> min = { -2.5, -1.75 };
+	std::pair<long double, long double> max = { min.first + realDiff, min.second + realDiff };
 
-    std::pair<double, double> imageMin = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
-    double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
-	double cellRealWidth = realDiff / CELLS_PER_ROW;
+    std::pair<long double, long double> imageMin = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
+    long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+	long double cellRealWidth = realDiff / CELLS_PER_ROW;
 
 	std::vector<Cell*> holding;
 
 	for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
 		holding.clear();
 		for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-			double realx = min.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
-			double realy = min.second + cellRealWidth * j;
+			long double realx = min.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+			long double realy = min.second + cellRealWidth * j;
             holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &min, &imageMin));
 		}
 
