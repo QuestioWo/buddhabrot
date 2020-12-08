@@ -57,9 +57,9 @@ void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std:
 	}
 }
 
-void Cell::render(unsigned int maxCount) {
+void Cell::render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB) {
     double percentageOfMax = log(counter) / log(maxCount);
     double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
-    glColor4f(brightness * 0.3, brightness * 0.3, 1.0, brightness);
+    glColor4f(colourR / 255.0f , colourG / 255.0f, colourB / 255.0f, brightness);
     glRectd(imagey, imagex, imagey + imagewidth, imagex + imagewidth); // x and y flipped to render it vertically
 }

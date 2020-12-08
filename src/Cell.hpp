@@ -33,7 +33,7 @@ struct Cell {
 
 	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount);
 
-    void render(unsigned int maxCount);
+    void render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB);
 };
 
 #endif // SRC_CELL_HPP_
