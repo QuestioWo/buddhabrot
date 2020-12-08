@@ -29,3 +29,5 @@ make
 ```
 
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. Examples of the program running can be found above
+
+Exiting the program can be done by pressing `Ctrl + C` in the same terminal window
