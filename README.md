@@ -7,7 +7,7 @@ C++ [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) fractal rendering pro
 * GLU
 * GLUT
 
-### Building & Running
+### Building & Usgae
 
 ```bash
 mkdir -p build && cd build
@@ -20,6 +20,8 @@ make
 A OpenGL window titled `Buddhabrot` will appear after the buddhabrot has been calculated. For 801 pixels x 801 pixels at 2500 iterations, the below window will appear:
 
 ![Buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500.png)
+
+The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500`
 
 ## Slight adjustments
 Within the `src/Cell.cpp` file, if a switch is made to the line containing
@@ -37,3 +39,5 @@ if (z.abs() < 2.0) {
 then an [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) will be rendered. The below render is using the 801x2500 pixels and iterations :
 
 ![Anti-buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500anti.png)
+
+The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500` after setting the necessary `>` to a `<`
