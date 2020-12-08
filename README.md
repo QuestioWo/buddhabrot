@@ -1,5 +1,3 @@
-C++ [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) fractal rendering program that uses the OpenGL library
-
 ## Running
 
 ### Prerequisites
@@ -17,7 +15,7 @@ make
 ```
 
 ## Result
-A OpenGL window titled `Buddhabrot` will appear after the buddhabrot has been calculated. For 801 pixels x 801 pixels at 2500 iterations, the below window will appear:
+A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. For 801 x 801 pixels at 2500 iterations, the below window will appear:
 
 ![Buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500.png)
 
