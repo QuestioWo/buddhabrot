@@ -4,6 +4,8 @@
 /build
 /Release
 
+**/xcuserdata/
+
 # Misc.
 .DS_Store
 

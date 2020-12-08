@@ -12,13 +12,9 @@ struct ComplexNumber {
 	double imag;
 
 	ComplexNumber() : real(0), imag(0) {};
-	ComplexNumber(double real, double imag) :
-			real(real), imag(imag) {
-	}
-	;
+	ComplexNumber(double real, double imag) : real(real), imag(imag) {};
 
 	ComplexNumber operator+(const ComplexNumber &c);
-	ComplexNumber operator-(const ComplexNumber &c);
 	ComplexNumber operator*(const ComplexNumber &c);
 
 	double abs();

@@ -7,51 +7,61 @@
 ///
 //===========================================================================//
 
-#include <Cell.hpp>
+#include "Cell.hpp"
+
+#ifdef __APPLE__
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
 
 #include <iostream>
+#include <math.h>
 #include <vector>
 
-Cell::Cell(double x, double y, double width, double imagewidth,
-		std::pair<double, double> min, std::pair<double, double> max) :
-		x(x), y(y), width(width), imagewidth(imagewidth) {
-	imagex = (x + min.first) * width;
-	imagey = (y + min.second) * width;
+Cell::Cell(double x, double y, double width, double imagewidth, std::pair<double, double> *realMin, std::pair<double, double> *imageMin) : x(x), y(y), width(width), imagewidth(imagewidth) {
+	imagex = abs(((realMin->first - x) / width ) * imagewidth) + imageMin->first;
+    imagey = abs(((realMin->second - y) / width ) * imagewidth) + imageMin->second;
 
 	counter = 0;
 
 	complex = ComplexNumber(x, y);
 }
 
-void Cell::escape(Cell *cell,
-		std::vector<std::vector<Cell*>> *cells, std::pair<double, double> min,
-		unsigned int iterations, unsigned int cellsPerRow) {
-	ComplexNumber c = cell->complex;
+int Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int maxCount) {
 	ComplexNumber z = ComplexNumber();
 	std::vector<Cell*> visited;
 	visited.clear();
 
 	for (unsigned int i = 0; i < iterations; ++i) {
-		z = z * z + c;
+        z = z*z + *c;
+		int visitedx = floor((z.real - realMin->first) / cells->at(0)[0]->width);
+		int visitedy = floor((z.imag - realMin->second) / cells->at(0)[0]->width);
 
-		int visitedx = int((z.real - min.first) / cell->width);
-		int visitedy = int((z.imag - min.second) / cell->width);
-
-		if (visitedx < (cellsPerRow - 1) && visitedy < (cellsPerRow - 1)
-				&& visitedx > 0 && visitedy > 0)
+        if (visitedx < (cellsPerRow - 1) && visitedy < (cellsPerRow - 1) && visitedx >= 0 && visitedy >= 0 && i != 0)
 			visited.push_back(cells->at(visitedx)[visitedy]);
-		else
+        else if (i != 0)
 			break;
 	}
 
 	if (z.abs() > 2.0) {
 		for (Cell *escapedbox : visited) {
-			int visitedx = int(
-					(escapedbox->complex.real - min.first) / cell->width);
-			int visitedy = int(
-					(escapedbox->complex.imag - min.second) / cell->width);
-
-			cells->at(visitedx)[visitedy]->counter++;
+			escapedbox->counter++;
+            maxCount = std::max(escapedbox->counter, maxCount);
 		}
 	}
+    
+    return maxCount;
+}
+
+void Cell::render(unsigned int maxCount) {
+    double percentageOfMax = log(counter) / log(maxCount);
+    double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
+    glColor4f(brightness * 0.3, brightness * 0.3, 1.0, brightness);
+    glRectd(imagey, imagex, imagey + imagewidth, imagex + imagewidth); // x and y flipped to render it vertically
 }
