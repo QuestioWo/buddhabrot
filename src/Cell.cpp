@@ -33,7 +33,7 @@ Cell::Cell(double x, double y, double width, double imagewidth, std::pair<double
 	complex = ComplexNumber(x, y);
 }
 
-int Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int maxCount) {
+void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount) {
 	ComplexNumber z = ComplexNumber();
 	std::vector<Cell*> visited;
 	visited.clear();
@@ -52,11 +52,9 @@ int Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::
 	if (z.abs() > 2.0) {
 		for (Cell *escapedbox : visited) {
 			escapedbox->counter++;
-            maxCount = std::max(escapedbox->counter, maxCount);
+            *maxCount = std::max(escapedbox->counter, *maxCount);
 		}
 	}
-    
-    return maxCount;
 }
 
 void Cell::render(unsigned int maxCount) {
