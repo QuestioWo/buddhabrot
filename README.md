@@ -5,7 +5,9 @@ C++ buddhabrot fractal rendering program that uses the OpenGL library
 ## Running
 
 ### Prerequisites
-* OpenGL installed
+* OpenGL
+* GLU
+* GLUT
 
 ### Building & Running
 
