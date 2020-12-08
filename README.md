@@ -35,4 +35,6 @@ to be
 if (z.abs() < 2.0) {
 ```
 
-then an [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) will be rendered
+then an [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) will be rendered. The below render is using the 801x2500 pixels and iterations :
+
+![Anti-buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500anti.png)
