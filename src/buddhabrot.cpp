@@ -20,7 +20,13 @@
 #include <GL/glut.h>
 #endif
 
-#define SCREEN_WIDTH 701
+#define WINDOW_WIDTH 801
+#define GL_CANVAS_MIN_X double(-1.0)
+#define GL_CANVAS_MAX_X double(1.0)
+#define GL_CANVAS_MIN_Y double(-1.0)
+#define GL_CANVAS_MAX_Y double(1.0)
+#define CELLS_PER_ROW 801
+#define ITERATIONS 2500
 
 #include <iostream>
 #include <stdio.h>
@@ -28,62 +34,51 @@
 
 void displayCallback();
 
-int main(int argc, char **argv) {
-	unsigned int iterations = 500;
+static std::vector<std::vector<Cell*>> g_cells = {};
+static unsigned int g_maxCount = 0;
 
-	double realDiff = 3.5;
+int main(int argc, char **argv) {
+    double realDiff = 3.5;
 
     std::pair<double, double> min = { -2.5, -1.75 };
-	std::pair<double, double> max = { min.first + realDiff, min.second
-			+ realDiff };
+	std::pair<double, double> max = { min.first + realDiff, min.second + realDiff };
 
-	unsigned int cellsPerRow = 35;
+    std::pair<double, double> imageMin = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
+    double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+	double cellRealWidth = realDiff / CELLS_PER_ROW;
 
-	double cellImageWidth = SCREEN_WIDTH / cellsPerRow;
-	double cellRealWidth = realDiff / cellsPerRow;
-
-	std::vector<std::vector<Cell*>> cells;
 	std::vector<Cell*> holding;
 
-	for (unsigned int i = 0; i < cellsPerRow; ++i) {
+	for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
 		holding.clear();
-		for (unsigned int j = 0; j < cellsPerRow; ++j) {
-			double realx = min.first + cellRealWidth * i;
+		for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+			double realx = min.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
 			double realy = min.second + cellRealWidth * j;
-			holding.push_back(
-					new Cell(realx, realy, cellRealWidth, cellImageWidth, min,
-							max));
+            holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &min, &imageMin));
 		}
 
-		cells.push_back(holding);
+		g_cells.push_back(holding);
 	}
 
-	unsigned int maxCount = 0;
-
-	std::vector<std::vector<Cell *>> countedCells(cells);
-
-	for (std::vector<Cell*> h : cells) {
-		for (Cell* cell : h) {
-			Cell::escape(cell, &countedCells, min, iterations, cellsPerRow);
+    std::cout << "Memory successfully yoinked" << std::endl;
+    
+	for (std::vector<Cell*> h : g_cells) {
+		for (Cell *cell : h) {
+            g_maxCount = Cell::escape(&cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, g_maxCount);
 		}
 	}
-
-	for (std::vector<Cell*> h : cells) {
-		for (Cell* cell : h) {
-			std::cout << cell->counter << ", ";
-			maxCount = std::max(cell->counter, maxCount);
-		}
-		std::cout << std::endl;
-	}
-
-	std::cout << maxCount << std::endl;
 
 	glutInit(&argc, argv);
-    glutInitWindowSize(SCREEN_WIDTH, SCREEN_WIDTH);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_WIDTH);
     glutInitDisplayMode(GLUT_RGBA);
     glutCreateWindow("Buddhabrot");
     
     glutDisplayFunc(displayCallback);
+    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
     glutMainLoop();
 
@@ -91,5 +86,13 @@ int main(int argc, char **argv) {
 }
 
 void displayCallback() {
-    glutSwapBuffers();
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    for (std::vector<Cell*> h : g_cells) {
+        for (Cell* cell : h) {
+            cell->render(g_maxCount);
+        }
+    }
+    
+    glFlush();
 }

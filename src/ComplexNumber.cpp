@@ -12,26 +12,18 @@
 #include <math.h>
 
 ComplexNumber ComplexNumber::operator+(const ComplexNumber &c) {
-	ComplexNumber *r = new ComplexNumber();
-	r->real = real + c.real;
-	r->imag = imag + c.imag;
-	return *r;
-}
-
-ComplexNumber ComplexNumber::operator-(const ComplexNumber &c) {
-	ComplexNumber *r = new ComplexNumber();
-	r->real = real - c.real;
-	r->imag = imag - c.imag;
-	return *r;
+    real = real + c.real;
+    imag = imag + c.imag;
+	return *this;
 }
 
 ComplexNumber ComplexNumber::operator*(const ComplexNumber &c) {
-	ComplexNumber *r = new ComplexNumber();
-	r->real = real * c.real;
-	r->imag = imag * c.imag;
-	return *r;
+    double oldReal = real;
+    real = real * c.real - imag * c.imag;
+    imag = 2 * oldReal * imag;
+	return *this;
 }
 
 double ComplexNumber::abs() {
-	return (real + imag * sqrt(2));
+	return hypot(real, imag);
 }

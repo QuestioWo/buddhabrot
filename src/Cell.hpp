@@ -29,14 +29,11 @@ struct Cell {
 
 	ComplexNumber complex;
 
-	Cell(double x, double y, double width, double imagewidth,
-			std::pair<double, double> min, std::pair<double, double> max);
+	Cell(double x, double y, double width, double imagewidth, std::pair<double, double> *realMin, std::pair<double, double> *imageMin);
 
-	static void escape(Cell *cell,
-			std::vector<std::vector<Cell*>> *cells,
-			std::pair<double, double> min, unsigned int iterations,
-			unsigned int cellsPerRow);
+	static int escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int maxCount);
 
+    void render(unsigned int maxCount);
 };
 
 #endif // SRC_CELL_HPP_
