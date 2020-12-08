@@ -1,4 +1,3 @@
-# buddhabrot
 C++ [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) fractal rendering program that uses the OpenGL library
 
 ## Running
