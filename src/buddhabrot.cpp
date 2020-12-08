@@ -106,11 +106,11 @@ int main(int argc, char *argv[]) {
     
     // print what buddhabrot will be generated
     std::cout << std::endl << "Generating buddhabrot with arguments :" << std::endl;
-    printf("\tpixels size : %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
-    printf("\twindow size : %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
-    printf("\titerations : %d\n", ITERATIONS);
-    printf("\tthreads : %d\n", NUM_THREADS);
-    printf("\tcolour : %d x %d x %d\n", COLOUR_R, COLOUR_G, COLOUR_B);
+    printf("\tpixels size\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
+    printf("\twindow size\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
+    printf("\titerations\t %d\n", ITERATIONS);
+    printf("\tthreads\t\t %d\n", NUM_THREADS);
+    printf("\tcolour\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
     std::cout << std::endl;
     
     // calculate buddhabrot
@@ -198,5 +198,5 @@ static void showUsage(std::string name) {
         << "\t-g COLOUR_G \t\t Specify the green component of the render's colour \t\t  defaults to 0\n"
         << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t  defaults to 255\n"
         << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
-        << std::endl << std::endl;
+        << std::endl;
 }
