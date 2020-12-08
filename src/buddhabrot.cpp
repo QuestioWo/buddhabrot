@@ -11,6 +11,7 @@
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
+#define GLUT_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
@@ -20,26 +21,99 @@
 #include <GL/glut.h>
 #endif
 
+#include <getopt.h>
 #include <iostream>
 #include <stdio.h>
 #include <thread>
 #include <vector>
 
-#define WINDOW_WIDTH 801
 #define GL_CANVAS_MIN_X double(-1.0)
 #define GL_CANVAS_MAX_X double(1.0)
 #define GL_CANVAS_MIN_Y double(-1.0)
 #define GL_CANVAS_MAX_Y double(1.0)
-#define CELLS_PER_ROW 801
-#define ITERATIONS 2500
 
 void displayCallback();
+static void showUsage(std::string name);
+
+static unsigned int ITERATIONS = 500;
+static unsigned int WINDOW_WIDTH = 501;
+static unsigned int CELLS_PER_ROW = WINDOW_WIDTH;
+static unsigned int NUM_THREADS = std::thread::hardware_concurrency() != 0 ? std::thread::hardware_concurrency() : 4;
+static unsigned int COLOUR_R = 0;
+static unsigned int COLOUR_G = 0;
+static unsigned int COLOUR_B = 255;
+static bool anti = false;
 
 static std::vector<std::vector<Cell*>> g_cells = {};
 static unsigned int g_maxCount = 0;
-static const unsigned int NUM_THREADS = std::thread::hardware_concurrency() != 0 ? std::thread::hardware_concurrency() : 4;
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+    // parse arguments
+    int option;
+    if (argc < 2)
+        showUsage(argv[0]);
+    
+    // put ':' at the starting of the string so compiler can distinguish between '?' and ':'
+    while((option = getopt(argc, argv, ":aw:p:i:r:g:b:t:")) != -1) {
+        switch(option) {
+            case 'a' :
+                anti = true;
+                break;
+                
+            case 'w' :
+                WINDOW_WIDTH = std::stoi(optarg);
+                CELLS_PER_ROW = WINDOW_WIDTH;
+                break;
+                
+            case 'p' :
+                CELLS_PER_ROW = std::stoi(optarg);
+                break;
+                
+            case 'i' :
+                ITERATIONS = std::stoi(optarg);
+                break;
+                
+            case 'r' :
+                COLOUR_R = std::stoi(optarg);
+                break;
+                
+            case 'g' :
+                COLOUR_G = std::stoi(optarg);
+                break;
+                
+            case 'b' :
+                COLOUR_B = std::stoi(optarg);
+                break;
+                
+            case 't' :
+                NUM_THREADS = std::stoi(optarg);
+                break;
+                
+            case ':' :
+                std::cout << ("Option needs a value") << std::endl;
+                break;
+                
+            case '?' :
+                if (optopt == 'h') {
+                    showUsage(argv[0]);
+                    return -1;
+                }
+                printf("Unknown option: %c\n", optopt);
+                showUsage(argv[0]);
+                break;
+        }
+    }
+    
+    // print what buddhabrot will be generated
+    std::cout << std::endl << "Generating buddhabrot with arguments :" << std::endl;
+    printf("\tpixels size : %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
+    printf("\twindow size : %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
+    printf("\titerations : %d\n", ITERATIONS);
+    printf("\tthreads : %d\n", NUM_THREADS);
+    printf("\tcolour : %d x %d x %d\n", COLOUR_R, COLOUR_G, COLOUR_B);
+    std::cout << std::endl;
+    
+    // calculate buddhabrot
     double realDiff = 3.5;
 
     std::pair<double, double> min = { -2.5, -1.75 };
@@ -73,7 +147,7 @@ int main(int argc, char **argv) {
                 delete threads[0];
                 threads.erase(threads.begin());
             }
-            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount));
+            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti));
 		}
 	}
 
@@ -82,6 +156,7 @@ int main(int argc, char **argv) {
     
     std::cout << "Calculated fractal" << std::endl;
     
+    // display buddhabrot
 	glutInit(&argc, argv);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_WIDTH);
     glutInitDisplayMode(GLUT_RGBA);
@@ -89,8 +164,8 @@ int main(int argc, char **argv) {
     
     glutDisplayFunc(displayCallback);
     
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
@@ -104,9 +179,24 @@ void displayCallback() {
     
     for (std::vector<Cell*> h : g_cells) {
         for (Cell* cell : h) {
-            cell->render(g_maxCount);
+            cell->render(g_maxCount, COLOUR_R, COLOUR_G, COLOUR_B);
         }
     }
     
     glFlush();
+}
+
+static void showUsage(std::string name) {
+    std::cerr << "Usage: " << name << " <option(s)>\n"
+        << "Options:\n"
+        << "\t-h \t\t\t Show this help message\n"
+        << "\t-a \t\t\t Generate an anti-buddhabrot \t\t\t\t\t  defaults to false\n"
+        << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t  defaults to 501\n"
+        << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t  defaults to WINDOW_WIDTH\n"
+        << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point   defaults to 500\n"
+        << "\t-r COLOUR_R \t\t Specify the red component of the render's colour \t\t  defaults to 0\n"
+        << "\t-g COLOUR_G \t\t Specify the green component of the render's colour \t\t  defaults to 0\n"
+        << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t  defaults to 255\n"
+        << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
+        << std::endl << std::endl;
 }
