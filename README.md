@@ -14,7 +14,7 @@ make
 ./buddhabrot
 ```
 
-## Result
+## Renders
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. For 801 x 801 pixels at 2500 iterations, the below window will appear:
 
 ![Buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500.png)
