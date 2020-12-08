@@ -42,6 +42,7 @@ static unsigned int NUM_THREADS = std::thread::hardware_concurrency() != 0 ? std
 static unsigned int COLOUR_R = 0;
 static unsigned int COLOUR_G = 0;
 static unsigned int COLOUR_B = 255;
+static bool anti = false;
 
 static std::vector<std::vector<Cell*>> g_cells = {};
 static unsigned int g_maxCount = 0;
@@ -53,33 +54,45 @@ int main(int argc, char *argv[]) {
         showUsage(argv[0]);
     
     // put ':' at the starting of the string so compiler can distinguish between '?' and ':'
-    while((option = getopt(argc, argv, ":w:p:i:r:g:b:t:")) != -1) {
+    while((option = getopt(argc, argv, ":aw:p:i:r:g:b:t:")) != -1) {
         switch(option) {
+            case 'a' :
+                anti = true;
+                break;
+                
             case 'w' :
                 WINDOW_WIDTH = std::stoi(optarg);
                 CELLS_PER_ROW = WINDOW_WIDTH;
                 break;
+                
             case 'p' :
                 CELLS_PER_ROW = std::stoi(optarg);
                 break;
+                
             case 'i' :
                 ITERATIONS = std::stoi(optarg);
                 break;
+                
             case 'r' :
                 COLOUR_R = std::stoi(optarg);
                 break;
+                
             case 'g' :
                 COLOUR_G = std::stoi(optarg);
                 break;
+                
             case 'b' :
                 COLOUR_B = std::stoi(optarg);
                 break;
+                
             case 't' :
                 NUM_THREADS = std::stoi(optarg);
                 break;
+                
             case ':' :
                 std::cout << ("Option needs a value") << std::endl;
                 break;
+                
             case '?' :
                 if (optopt == 'h') {
                     showUsage(argv[0]);
@@ -92,7 +105,7 @@ int main(int argc, char *argv[]) {
     }
     
     // print what buddhabrot will be generated
-    std::cout << "Generating buddhabrot with arguments :" << std::endl;
+    std::cout << std::endl << "Generating buddhabrot with arguments :" << std::endl;
     printf("\tpixels size : %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size : %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
     printf("\titerations : %d\n", ITERATIONS);
@@ -134,7 +147,7 @@ int main(int argc, char *argv[]) {
                 delete threads[0];
                 threads.erase(threads.begin());
             }
-            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount));
+            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti));
 		}
 	}
 
@@ -174,15 +187,16 @@ void displayCallback() {
 }
 
 static void showUsage(std::string name) {
-    std::cerr << "Usage: " << name << " <option(s)> SOURCES"
+    std::cerr << "Usage: " << name << " <option(s)>\n"
         << "Options:\n"
-        << "\t-h,\t\t\tShow this help message\n"
-        << "\t-w WINDOW_WIDTH\t\tSpecify the width of the window\t\t\t\t\t defaults to 501\n"
-        << "\t-p CELLS_PER_ROW\tSpecify the number of 'boxes' per row\t\t\t\t defaults to WINDOW_WIDTH\n"
-        << "\t-i ITERATIONS\t\tSpecify the number of iterations to be performed on each point\t defaults to 500\n"
-        << "\t-r COLOUR_R\t\tSpecify the red component of the render's colour\t\t defaults to 0\n"
-        << "\t-g COLOUR_G\t\tSpecify the green component of the render's colour\t\t defaults to 0\n"
-        << "\t-b COLOUR_B\t\tSpecify the blue component of the render's colour\t\t defaults to 255\n"
-        << "\t-t NUM_THREADS\t\tSpecify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
+        << "\t-h \t\t\t Show this help message\n"
+        << "\t-a \t\t\t Generate an anti-buddhabrot \t\t\t\t\t  defaults to false\n"
+        << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t  defaults to 501\n"
+        << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t  defaults to WINDOW_WIDTH\n"
+        << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point   defaults to 500\n"
+        << "\t-r COLOUR_R \t\t Specify the red component of the render's colour \t\t  defaults to 0\n"
+        << "\t-g COLOUR_G \t\t Specify the green component of the render's colour \t\t  defaults to 0\n"
+        << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t  defaults to 255\n"
+        << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
         << std::endl << std::endl;
 }

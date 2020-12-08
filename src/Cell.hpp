@@ -31,7 +31,7 @@ struct Cell {
 
 	Cell(double x, double y, double width, double imagewidth, std::pair<double, double> *realMin, std::pair<double, double> *imageMin);
 
-	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount);
+	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti);
 
     void render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB);
 };

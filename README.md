@@ -23,21 +23,8 @@ A OpenGL window titled `Buddhabrot` will appear after the buddhabrot has been ca
 
 The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500`
 
-## Slight adjustments
-Within the `src/Cell.cpp` file, if a switch is made to the line containing
-
-```c++
-if (z.abs() > 2.0) {
-```
-
-to be
-
-```c++
-if (z.abs() < 2.0) {
-```
-
-then an [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) will be rendered. The below render is using the 801x2500 pixels and iterations :
+This program also supports [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) rendering. The below render is using the 801x2500 pixels and iterations :
 
 ![Anti-buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500anti.png)
 
-The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500` after setting the necessary `>` to a `<`
+The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500 -a`

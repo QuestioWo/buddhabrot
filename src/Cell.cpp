@@ -33,7 +33,7 @@ Cell::Cell(double x, double y, double width, double imagewidth, std::pair<double
 	complex = ComplexNumber(x, y);
 }
 
-void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount) {
+void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<double, double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti) {
 	ComplexNumber z = ComplexNumber();
 	std::vector<Cell*> visited;
 	visited.clear();
@@ -49,7 +49,7 @@ void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std:
 			break;
 	}
 
-	if (z.abs() > 2.0) {
+	if (anti ? z.abs() < 2.0 : z.abs() > 2.0) { // regular buddhabrot means that the point escapes, thus > 2.0 for !anti
 		for (Cell *escapedbox : visited) {
 			escapedbox->counter++;
             *maxCount = std::max(escapedbox->counter, *maxCount);
