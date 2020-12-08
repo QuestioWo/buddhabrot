@@ -19,10 +19,10 @@ A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://e
 
 ![Buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500.png)
 
-The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500`
+The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500 -r 128`
 
 This program also supports [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) rendering. The below render is using the 801x2500 pixels and iterations :
 
 ![Anti-buddhabrot](https://raw.githubusercontent.com/QuestioWo/buddhabrot/main/assets/801x2500anti.png)
 
-The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500 -a`
+The command that can be used for getting this result is `./buddhabrot -w 801 -i 2500 -r 128 -a`
