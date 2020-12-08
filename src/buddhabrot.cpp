@@ -20,6 +20,11 @@
 #include <GL/glut.h>
 #endif
 
+#include <iostream>
+#include <stdio.h>
+#include <thread>
+#include <vector>
+
 #define WINDOW_WIDTH 801
 #define GL_CANVAS_MIN_X double(-1.0)
 #define GL_CANVAS_MAX_X double(1.0)
@@ -28,14 +33,11 @@
 #define CELLS_PER_ROW 801
 #define ITERATIONS 2500
 
-#include <iostream>
-#include <stdio.h>
-#include <vector>
-
 void displayCallback();
 
 static std::vector<std::vector<Cell*>> g_cells = {};
 static unsigned int g_maxCount = 0;
+static const unsigned int NUM_THREADS = std::thread::hardware_concurrency() != 0 ? std::thread::hardware_concurrency() : 4;
 
 int main(int argc, char **argv) {
     double realDiff = 3.5;
@@ -62,12 +64,24 @@ int main(int argc, char **argv) {
 
     std::cout << "Memory successfully yoinked" << std::endl;
     
+    std::vector<std::thread*> threads;
+    
 	for (std::vector<Cell*> h : g_cells) {
 		for (Cell *cell : h) {
-            g_maxCount = Cell::escape(&cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, g_maxCount);
+            if (threads.size() >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
+                threads[0]->join();
+                delete threads[0];
+                threads.erase(threads.begin());
+            }
+            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount));
 		}
 	}
 
+    for (unsigned int i = 0; i < threads.size(); ++i)
+        threads[i]->join();
+    
+    std::cout << "Calculated fractal" << std::endl;
+    
 	glutInit(&argc, argv);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_WIDTH);
     glutInitDisplayMode(GLUT_RGBA);
