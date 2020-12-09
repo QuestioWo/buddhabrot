@@ -139,8 +139,9 @@ int main(int argc, char *argv[]) {
     std::vector<std::thread*> threads;
     
 	for (std::vector<Cell*> h : g_cells) {
-		for (Cell *cell : h) {
-            if (threads.size() >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
+        for (unsigned int i = 0; i < h.size(); ++i) {
+            Cell *cell = h[i];
+            if (i >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
                 threads[0]->join();
                 delete threads[0];
                 threads.erase(threads.begin());
@@ -149,8 +150,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-    for (unsigned int i = 0; i < threads.size(); ++i)
+    for (unsigned int i = 0; i < threads.size(); ++i) {
         threads[i]->join();
+        delete threads[i];
+        threads.erase(threads.begin() + i);
+    }
     
     std::cout << "Calculated fractal" << std::endl;
     
