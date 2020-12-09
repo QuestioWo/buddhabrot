@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     }
     
     // print what buddhabrot will be generated
-    std::cout << std::endl << "Generating buddhabrot with arguments :" << std::endl;
+    std::cout << std::endl << "Generating " + std::string(anti ? "anti-" : "") + "buddhabrot with arguments :" << std::endl;
     printf("\tpixels size\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
     printf("\titerations\t %d\n", ITERATIONS);
