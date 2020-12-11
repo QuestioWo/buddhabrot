@@ -21,7 +21,6 @@ The command that can be used for getting this result is `./buddhabrot -w 801 -i 
 
 ```bash
 git clone https://github.com/QuestioWo/buddhabrot.git
-cd buddhabrot
 mkdir -p buddhabrot/build && cd buddhabrot/build
 cmake ..
 make
@@ -31,3 +30,11 @@ make
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. Examples of the program running can be found above
 
 Exiting the program can be done by pressing `Ctrl + C` in the same terminal window
+
+## Author
+
+This buddhabrot rendering program has been and is being written by [Jim Carty](https://questiowo.github.io). Email: cartyjim1@gmail.com
+
+## License
+
+This project is licensed under the terms of the MIT license. See `LICENSE` file for the full license.
