@@ -37,4 +37,4 @@ This buddhabrot rendering program has been and is being written by [Jim Carty](h
 
 ## License
 
-This project is licensed under the terms of the MIT license. See `LICENSE` file for the full license.
+This project is licensed under the terms of the MIT license. See `LICENSE.txt` file for the full license.
