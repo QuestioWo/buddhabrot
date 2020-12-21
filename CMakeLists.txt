@@ -4,11 +4,15 @@ project( buddhabrot )
 
 add_compile_options( -std=c++11 )
 
-# Find OpenGL
+# Find OpenGL and GLUT
 find_package(OpenGL REQUIRED)
-message(STATUS "OPENGL_FOUND:= ${OPENGL_FOUND}")
+message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
 find_package(GLUT REQUIRED)
-message(STATUS "GLUT_FOUND:= ${GLUT_FOUND}")
+message(STATUS "GLUT_FOUND := TRUE")
+
+# Find libpng using PkgConfig
+find_package(PNG REQUIRED)
+message(STATUS "PNG_FOUND := TRUE")
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 
@@ -28,5 +32,5 @@ add_executable( ${PROJECT_NAME}
 	${HEADER_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${PNG_LIBRARIES})

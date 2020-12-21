@@ -30,7 +30,6 @@
 		1F18FFB3257EC47C00BBA6D2 /* buddhabrot */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = buddhabrot; sourceTree = BUILT_PRODUCTS_DIR; };
 		1F18FFBF257EC48A00BBA6D2 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		1F18FFC2257EC81000BBA6D2 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		1F18FFC6257EC99C00BBA6D2 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		1F18FFC8257EC99C00BBA6D2 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		1F18FFC9257EC99C00BBA6D2 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		1F18FFCF257ECAEE00BBA6D2 /* Cell.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Cell.hpp; sourceTree = "<group>"; };
@@ -38,6 +37,11 @@
 		1F18FFD1257ECAEE00BBA6D2 /* ComplexNumber.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComplexNumber.cpp; sourceTree = "<group>"; };
 		1F18FFD2257ECAEE00BBA6D2 /* ComplexNumber.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ComplexNumber.hpp; sourceTree = "<group>"; };
 		1F18FFD3257ECAEE00BBA6D2 /* buddhabrot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = buddhabrot.cpp; sourceTree = "<group>"; };
+		1F215217259120AE00CA846E /* X11 */ = {isa = PBXFileReference; lastKnownFileType = text; name = X11; path = ../../../../usr/X11; sourceTree = "<group>"; };
+		1F21521E2591323F00CA846E /* buddhabrot.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = buddhabrot.entitlements; sourceTree = "<group>"; };
+		1F5A8ABC2591039900A6F80E /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		1F5A8AC025910E2300A6F80E /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.a; sourceTree = "<group>"; };
+		1F5A8ACB2591161E00A6F80E /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,8 +49,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1F18FFC3257EC81000BBA6D2 /* GLUT.framework in Frameworks */,
 				1F18FFC0257EC48A00BBA6D2 /* OpenGL.framework in Frameworks */,
+				1F18FFC3257EC81000BBA6D2 /* GLUT.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,10 +60,11 @@
 		1F18FFAA257EC47C00BBA6D2 = {
 			isa = PBXGroup;
 			children = (
+				1F21521E2591323F00CA846E /* buddhabrot.entitlements */,
 				1F18FFCE257ECABF00BBA6D2 /* src */,
-				1F18FFC6257EC99C00BBA6D2 /* LICENSE */,
 				1F18FFC9257EC99C00BBA6D2 /* README.md */,
 				1F18FFC8257EC99C00BBA6D2 /* CMakeLists.txt */,
+				1F5A8ABC2591039900A6F80E /* LICENSE.txt */,
 				1F18FFBE257EC48A00BBA6D2 /* Frameworks */,
 				1F18FFB4257EC47C00BBA6D2 /* Products */,
 			);
@@ -76,6 +81,9 @@
 		1F18FFBE257EC48A00BBA6D2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1F215217259120AE00CA846E /* X11 */,
+				1F5A8ACB2591161E00A6F80E /* libz.tbd */,
+				1F5A8AC025910E2300A6F80E /* libpng16.a */,
 				1F18FFC2257EC81000BBA6D2 /* GLUT.framework */,
 				1F18FFBF257EC48A00BBA6D2 /* OpenGL.framework */,
 			);
@@ -210,10 +218,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -263,10 +274,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -274,11 +288,18 @@
 		1F18FFBB257EC47C00BBA6D2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_ENTITLEMENTS = buddhabrot.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 94PVB73DU7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-lz",
+					"-lpng16",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -286,11 +307,18 @@
 		1F18FFBC257EC47C00BBA6D2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_ENTITLEMENTS = buddhabrot.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 94PVB73DU7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-lz",
+					"-lpng16",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
