@@ -8,14 +8,14 @@
 //===========================================================================//
 
 struct ComplexNumber {
-	long double real;
-	long double imag;
+	double real;
+	double imag;
 
 	ComplexNumber() : real(0), imag(0) {};
-	ComplexNumber(long double real, long double imag) : real(real), imag(imag) {};
+	ComplexNumber(double real, double imag) : real(real), imag(imag) {};
 
 	ComplexNumber operator+(const ComplexNumber &c);
 	ComplexNumber operator*(const ComplexNumber &c);
 
-	long double abs();
+	double abs();
 };

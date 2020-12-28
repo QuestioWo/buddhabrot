@@ -9,6 +9,8 @@ find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
 find_package(GLUT REQUIRED)
 message(STATUS "GLUT_FOUND := TRUE")
+find_package(OpenCL REQUIRED)
+message(STATUS "OPENCL_FOUND := TRUE")
 
 # Find libpng using PkgConfig
 find_package(PNG REQUIRED)
@@ -32,5 +34,5 @@ add_executable( ${PROJECT_NAME}
 	${HEADER_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${PNG_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${PNG_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${OPENCL_LIBRARIES} ${PNG_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENCL_LIBRARIES} ${PNG_LIBRARIES})

@@ -14,26 +14,38 @@
 #define GLUT_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
 #include <GLUT/glut.h>
+
+#include <OpenCL/opencl.h>
 #else
 #include <GL/gl.h>
 #include <GL/glut.h>
+
+#include <CL/opencl.h>
 #endif
 
 #include <png.h>
 
+#include <filesystem>
 #include <getopt.h>
 #include <iostream>
 #include <stdio.h>
 #include <thread>
 #include <vector>
 
-static const long double GL_CANVAS_MIN_X = -1.0;
-static const long double GL_CANVAS_MAX_X = 1.0;
-static const long double GL_CANVAS_MIN_Y = -1.0;
-//static const long double GL_CANVAS_MAX_Y = 1.0;
+static const double GL_CANVAS_MIN_X = -1.0;
+static const double GL_CANVAS_MAX_X = 1.0;
+static const double GL_CANVAS_MIN_Y = -1.0;
+//static const double GL_CANVAS_MAX_Y = 1.0;
+static const double REAL_DIFF = 3.5;
+static const std::pair<double, double> MIN = { -2.5, -1.75 };
+//static const std::pair<double, double> MAX = { MIN.first + REAL_DIFF, MIN.second + REAL_DIFF };
+static const std::pair<double, double> IMAGE_MIN = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
+static const char *KERNEL_FILENAME = "/src/EscapeKernel.cl";
+static const char *KERNEL_FUNCTION_NAME = "escape";
 
-void displayCallback();
+static void displayCallback();
 static void showUsage(std::string name);
+static char *loadTextFromFile(const char *filename, size_t *stringLength);
 
 static unsigned int ITERATIONS = 500;
 static unsigned int WINDOW_WIDTH = 501;
@@ -45,9 +57,11 @@ static unsigned char COLOUR_B = 255;
 static bool anti = false;
 static bool save = false;
 static bool alpha = false;
+static bool useGpu = false;
 static std::string FILE_NAME;
 
-static std::vector<std::vector<Cell*>> g_cells = {};
+static std::vector<std::vector<Cell*>> g_cellsClass = {};
+static double *g_cellsGPU;
 static unsigned int g_maxCount = 0;
 
 int main(int argc, char *argv[]) {
@@ -57,7 +71,7 @@ int main(int argc, char *argv[]) {
         showUsage(argv[0]);
     
     // put ':' at the starting of the string so compiler can distinguish between '?' and ':'
-    while((option = getopt(argc, argv, ":a4s:w:p:i:r:g:b:t:")) != -1) {
+    while((option = getopt(argc, argv, ":ao4s:w:p:i:r:g:b:t:")) != -1) {
         switch(option) {
             case 'a' :
                 anti = true;
@@ -70,6 +84,10 @@ int main(int argc, char *argv[]) {
             
             case '4' :
                 alpha = true;
+                break;
+            
+            case 'o' :
+                useGpu = true;
                 break;
                 
             case 'w' :
@@ -118,62 +136,214 @@ int main(int argc, char *argv[]) {
     
     // print what buddhabrot will be generated
     std::cout << std::endl << "Generating " + std::string(anti ? "anti-" : "") + "buddhabrot with arguments :" << std::endl;
-    printf("\tpixels size\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
-    printf("\twindow size\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
-    printf("\titerations\t %d\n", ITERATIONS);
-    printf("\tthreads\t\t %d\n", NUM_THREADS);
-    printf("\tcolour\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
-    printf("\tsave to\t\t %s\n", save ? std::string(FILE_NAME + ".png").c_str() : "N/A");
-    printf("\tpng with alpha\t %s\n", alpha ? "true" : "false");
+    printf("\tpixels size\t\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
+    printf("\twindow size\t\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
+    printf("\titerations\t\t %d\n", ITERATIONS);
+    printf("\tthreads\t\t\t %d\n", NUM_THREADS);
+    printf("\tcolour\t\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
+    printf("\tsave to\t\t\t %s\n", save ? std::string(FILE_NAME + ".png").c_str() : "N/A");
+    printf("\tpng with alpha\t\t %s\n", save ? alpha ? "true" : "false" : "N/A");
+    printf("\tgenerate with gpu \t %s\n", useGpu ? "true" : "false");
     
     std::cout << std::endl;
     
     // calculate buddhabrot
-    long double realDiff = 3.5;
+    double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+	double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
 
-    std::pair<long double, long double> min = { -2.5, -1.75 };
-	std::pair<long double, long double> max = { min.first + realDiff, min.second + realDiff };
-
-    std::pair<long double, long double> imageMin = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
-    long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
-	long double cellRealWidth = realDiff / CELLS_PER_ROW;
-
-	std::vector<Cell*> holding;
-
-	for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
-		holding.clear();
-		for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-			long double realx = min.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
-			long double realy = min.second + cellRealWidth * j;
-            holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &min, &imageMin));
-		}
-
-		g_cells.push_back(holding);
-	}
-
-    std::cout << "Memory successfully yoinked" << std::endl;
-    
-    std::vector<std::thread*> threads;
-    
-	for (std::vector<Cell*> h : g_cells) {
-        for (unsigned int i = 0; i < h.size(); ++i) {
-            Cell *cell = h[i];
-            if (i >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
-                threads[0]->join();
-                delete threads[0];
-                threads.erase(threads.begin());
+    if (useGpu) {
+        unsigned int count = CELLS_PER_ROW * CELLS_PER_ROW;
+        
+        g_cellsGPU = new double[count * 3];
+        double *counts = new double[count]();
+        
+        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+                double realy = MIN.second + cellRealWidth * j;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0] = realx;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1] = realy;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = 0;
             }
-            threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cells, &min, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti));
-		}
-	}
+        }
+        
+        size_t global;
+        size_t local;
+        
+        cl_context context;
+        cl_command_queue commands;
+        cl_kernel kernel;
+        cl_program program;
+        cl_device_id deviceId;
+        
+        cl_mem input;
+        cl_mem output;
+        
+        int err = 0;
+        char *source = 0;
+        size_t length = 0;
+        
+        // Connect to a compute device
+        int gpu = 1;
+        err = clGetDeviceIDs(NULL, gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, 1, &deviceId, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to create a device group!\n");
+            return EXIT_FAILURE;
+        }
+      
+        // Create a compute context
+        context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
+        if (!context) {
+            printf("Error: Failed to create a compute context!\n");
+            return EXIT_FAILURE;
+        }
+        
+        // Create a command commands
+        commands = clCreateCommandQueue(context, deviceId, 0, &err);
+        if (!commands) {
+            printf("Error: Failed to create a command commands!\n");
+            return EXIT_FAILURE;
+        }
+        
+        source = loadTextFromFile(KERNEL_FILENAME, &length);
+        if (length == 0) {
+            printf("Error: Failed to load kernel source!\n");
+            return EXIT_FAILURE;
+        }
+        
+        // Create the compute program from the source buffer
+        program = clCreateProgramWithSource(context, 1, (const char **) &source, NULL, &err);
+        if (!program || err != CL_SUCCESS)
+        {
+            printf("Error: Failed to create compute program!\n");
+            return EXIT_FAILURE;
+        }
+        free(source);
 
-    for (unsigned int i = 0; i < threads.size(); ++i) {
-        threads[i]->join();
-        delete threads[i];
-        threads.erase(threads.begin() + i);
+        // Build the program executable
+        err = clBuildProgram(program, 1, &deviceId, "-cl-opt-disable", NULL, NULL);
+        if (err != CL_SUCCESS) {
+            size_t len;
+            char buffer[2048];
+
+            printf("Error: Failed to build program executable!\n");
+            clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, 2048 * 8, buffer, &len);
+            printf("%s\n", buffer);
+            return EXIT_FAILURE;
+        }
+
+        // Create the compute kernel from within the program
+        kernel = clCreateKernel(program, KERNEL_FUNCTION_NAME, &err);
+        if (!kernel || err != CL_SUCCESS) {
+            printf("Error: Failed to create compute kernel!\n");
+            return EXIT_FAILURE;
+        }
+        
+        // Create the input and output arrays in device memory for our calculation
+        input = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(double) * count * 3, NULL, NULL);
+        output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(double) * count, NULL, NULL);
+        if (!input || !output) {
+            printf("Error: Failed to allocate device memory!\n");
+            return EXIT_FAILURE;
+        }
+        
+        // Write our data set into the input array in device memory
+        err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(double) * count * 3, g_cellsGPU, 0, NULL, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to write to source array!\n");
+            return EXIT_FAILURE;
+        }
+     
+        // Set the arguments to our compute kernel
+        err = 0;
+        err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
+        err |= clSetKernelArg(kernel, 1, sizeof(double), &MIN.first);
+        err |= clSetKernelArg(kernel, 2, sizeof(double), &MIN.second);
+        err |= clSetKernelArg(kernel, 3, sizeof(unsigned int), &ITERATIONS);
+        err |= clSetKernelArg(kernel, 4, sizeof(unsigned int), &CELLS_PER_ROW);
+        err |= clSetKernelArg(kernel, 5, sizeof(double), &cellRealWidth);
+        err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &anti);
+        err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &output);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to set kernel arguments! %d\n", err);
+            return EXIT_FAILURE;
+        }
+        
+        std::cout << "Memory successfully yoinked" << std::endl;
+        
+        // Get the maximum work group size for executing the kernel on the device
+        err = clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to retrieve kernel work group info! %d\n", err);
+            return EXIT_FAILURE;
+        }
+        
+        // Execute the kernel over the entire range of our 1d input data set
+        // using the maximum number of work group items for this device
+        global = count;
+        err = clEnqueueNDRangeKernel(commands, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
+        if (err) {
+            printf("Error: Failed to execute kernel!\n");
+            return EXIT_FAILURE;
+        }
+     
+        // Wait for the command commands to get serviced before reading back results
+        clFinish(commands);
+     
+        // Read back the results from the device to verify the output
+        err = clEnqueueReadBuffer( commands, output, CL_TRUE, 0, sizeof(float) * count, counts, 0, NULL, NULL );
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to read output array! %d\n", err);
+            return EXIT_FAILURE;
+        }
+        
+        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = counts[i * CELLS_PER_ROW + j];
+                
+                if (g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] > g_maxCount)
+                    g_maxCount = g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2];
+            }
+        }
+    } else {
+        std::vector<Cell*> holding;
+
+        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+            holding.clear();
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+                double realy = MIN.second + cellRealWidth * j;
+                holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &MIN, &IMAGE_MIN));
+            }
+
+            g_cellsClass.push_back(holding);
+        }
+
+        std::cout << "Memory successfully yoinked" << std::endl;
+        
+        std::vector<std::thread*> threads;
+        
+        for (std::vector<Cell*> h : g_cellsClass) {
+            for (unsigned int i = 0; i < h.size(); ++i) {
+                Cell *cell = h[i];
+                if (i >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
+                    threads[0]->join();
+                    delete threads[0];
+                    threads.erase(threads.begin());
+                }
+                threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti));
+            }
+        }
+
+        for (unsigned int i = 0; i < threads.size(); ++i) {
+            threads[i]->join();
+            delete threads[i];
+            threads.erase(threads.begin() + i);
+        }
     }
     
     std::cout << "Calculated fractal" << std::endl;
+    std::cout << "Max count := " << g_maxCount << std::endl;
     
     // display buddhabrot
     if (!save) {
@@ -211,7 +381,11 @@ int main(int argc, char *argv[]) {
 
             png_bytep rpptr = row_pointers[i];
             for (unsigned int j = 0; j < WINDOW_WIDTH; ++j) {
-                long double percentageOfMax = log(g_cells[i][j]->counter) / log(g_maxCount);
+                double percentageOfMax;
+                if (useGpu) // TODO: change
+                    percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
+                else
+                    percentageOfMax = log(g_cellsClass[i][j]->counter) / log(g_maxCount);
                 
                 if (percentageOfMax <= 0.25) {
                     // RGB
@@ -270,12 +444,29 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void displayCallback() {
+static void displayCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
     
-    for (std::vector<Cell*> h : g_cells) {
-        for (Cell* cell : h) {
-            cell->render(g_maxCount, COLOUR_R, COLOUR_G, COLOUR_B);
+    if (useGpu) {
+        double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
+        double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+        
+        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                
+                double imagex = abs(((MIN.first - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.first;
+                double imagey = abs(((MIN.second - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.second;
+                
+                double percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
+                double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
+                glColor4f(COLOUR_R / 255.0f , COLOUR_G / 255.0f, COLOUR_B / 255.0f, brightness);
+                glRectd(imagey, imagex, imagey + cellImageWidth, imagex + cellImageWidth); // x and y flipped to render it vertically
+            }
+        }
+    } else {
+        for (std::vector<Cell*> h : g_cellsClass) {
+            for (Cell* cell : h)
+                cell->render(g_maxCount, COLOUR_R, COLOUR_G, COLOUR_B);
         }
     }
     
@@ -287,8 +478,9 @@ static void showUsage(std::string name) {
         << "Options:\n"
         << "\t-h \t\t\t Show this help message\n"
         << "\t-a \t\t\t Generate an anti-buddhabrot \t\t\t\t\t  defaults to false\n"
+        << "\t-o \t\t\t Calculate the buddhabrot using OpenCL, i.e using GPU \t\t  defaults to false\n"
+        << "\t-4 \t\t\t Generate png with alpha based-brightness; viewer dependant \t  defaults to false\n"
         << "\t-s FILE_NAME\t\t Saves buddhabrot as a png to the specified (FILE_NAME + '.png')  defaults to 'buddhabrot'\n"
-        << "\t-4 \t\t\t Generate png with alpha based-brightness; may look washed out \t  defaults to false\n"
         << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t  defaults to 501\n"
         << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t  defaults to WINDOW_WIDTH\n"
         << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point   defaults to 500\n"
@@ -297,4 +489,30 @@ static void showUsage(std::string name) {
         << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t  defaults to 255\n"
         << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
         << std::endl;
+}
+
+static char *loadTextFromFile(const char *filename, size_t *stringLength) {
+    char *resultString = new char;
+    size_t length = 0;
+    
+    std::filesystem::path p = std::filesystem::current_path();
+    
+    p += filename;
+    
+    FILE *file = fopen(p.c_str(), "rb");
+    if(file == NULL) {
+        std::cout << "Error: Couldn't read the program file" << std::endl;
+        return resultString;
+    }
+    fseek(file, 0, SEEK_END);
+    length = ftell(file);
+    rewind(file); // reset the file pointer so that 'fread' reads from the front
+    resultString = (char*)malloc(length + 1);
+    resultString[length] = '\0';
+    fread(resultString, sizeof(char), length, file);
+    fclose(file);
+    
+    *stringLength = length;
+    
+    return resultString;
 }
