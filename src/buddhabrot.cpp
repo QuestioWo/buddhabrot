@@ -221,7 +221,8 @@ int main(int argc, char *argv[]) {
         free(source);
 
         // Build the program executable
-        err = clBuildProgram(program, 1, &deviceId, "-cl-opt-disable", NULL, NULL);
+        // TODO: fix
+        err = clBuildProgram(program, 1, &deviceId, NULL, NULL, NULL);
         if (err != CL_SUCCESS) {
             size_t len;
             char buffer[2048];

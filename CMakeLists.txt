@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 3.0.2 )
 
 project( buddhabrot )
 
-add_compile_options( -std=c++11 )
+add_compile_options( -std=c++17 )
 
 # Find OpenGL and GLUT
 find_package(OpenGL REQUIRED)
@@ -34,5 +34,5 @@ add_executable( ${PROJECT_NAME}
 	${HEADER_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${OPENCL_LIBRARIES} ${PNG_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENCL_LIBRARIES} ${PNG_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${OpenCL_LIBRARIES} ${PNG_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCL_LIBRARIES} ${PNG_LIBRARIES})
