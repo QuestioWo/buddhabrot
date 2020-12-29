@@ -22,7 +22,7 @@
 #include <math.h>
 #include <vector>
 
-Cell::Cell(long double x, long double y, long double width, long double imagewidth, std::pair<long double, long double> *realMin, std::pair<long double, long double> *imageMin) : x(x), y(y), width(width), imagewidth(imagewidth) {
+Cell::Cell(long double x, long double y, long double width, long double imagewidth, const std::pair<long double, long double> *realMin, const std::pair<long double, long double> *imageMin) : x(x), y(y), width(width), imagewidth(imagewidth) {
 	imagex = abs(((realMin->first - x) / width ) * imagewidth) + imageMin->first;
     imagey = abs(((realMin->second - y) / width ) * imagewidth) + imageMin->second;
 
@@ -31,12 +31,12 @@ Cell::Cell(long double x, long double y, long double width, long double imagewid
 	complex = ComplexNumber(x, y);
 }
 
-void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std::pair<long double, long double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti) {
+void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, const std::pair<long double, long double> *realMin, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti) {
 	ComplexNumber z = ComplexNumber();
 	std::vector<Cell*> visited;
 	visited.clear();
 
-	for (unsigned int i = 0; i < iterations; ++i) {
+	for (unsigned int i = 0; i <= iterations; ++i) {
         z = z*z + *c;
 		int visitedx = floor((z.real - realMin->first) / cells->at(0)[0]->width);
 		int visitedy = floor((z.imag - realMin->second) / cells->at(0)[0]->width);
@@ -50,7 +50,8 @@ void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, std:
 	if (anti ? z.abs() < 2.0 : z.abs() > 2.0) { // regular buddhabrot means that the point escapes, thus > 2.0 for !anti
 		for (Cell *escapedbox : visited) {
 			escapedbox->counter++;
-            *maxCount = std::max(escapedbox->counter, *maxCount);
+            if (*maxCount < escapedbox->counter)
+                *maxCount = escapedbox->counter;
 		}
 	}
 }

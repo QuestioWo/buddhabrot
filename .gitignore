@@ -2,7 +2,8 @@
 
 # Builds
 /build
-/Release
+/Debug
+/Intermediates
 
 **/xcuserdata/
 
