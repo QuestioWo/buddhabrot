@@ -10,11 +10,13 @@
 #include "ComplexNumber.hpp"
 
 #include <tuple>
+#include <vector>
 
 #ifndef SRC_CELL_HPP_
 #define SRC_CELL_HPP_
 
-struct Cell {
+class Cell {
+public:
 	long double x;
 	long double y;
 
