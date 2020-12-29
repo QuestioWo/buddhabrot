@@ -19,7 +19,7 @@ find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
 find_package(GLUT REQUIRED)
 message(STATUS "GLUT_FOUND := TRUE")
-find_package(OpenCL 1.2 EXACT REQUIRED)
+find_package(OpenCL 1.2 REQUIRED)
 message(STATUS "OPENCL_FOUND := TRUE")
 
 # Find libpng using PkgConfig
