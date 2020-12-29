@@ -32,14 +32,31 @@
 #include <thread>
 #include <vector>
 
-static const double GL_CANVAS_MIN_X = -1.0;
-static const double GL_CANVAS_MAX_X = 1.0;
-static const double GL_CANVAS_MIN_Y = -1.0;
-//static const double GL_CANVAS_MAX_Y = 1.0;
-static const double REAL_DIFF = 3.5;
-static const std::pair<double, double> MIN = { -2.5, -1.75 };
-//static const std::pair<double, double> MAX = { MIN.first + REAL_DIFF, MIN.second + REAL_DIFF };
-static const std::pair<double, double> IMAGE_MIN = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
+
+#if defined(cl_khr_fp64)
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+    #define DOUBLE_SUPPORT_AVAILABLE
+#elif defined(cl_amd_fp64)
+    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+    #define DOUBLE_SUPPORT_AVAILABLE
+#endif
+
+#if defined(DOUBLE_SUPPORT_AVAILABLE)
+    // double
+    typedef double Real;
+#else
+    // float
+    typedef float Real;
+#endif
+
+static const long double GL_CANVAS_MIN_X = -1.0;
+static const long double GL_CANVAS_MAX_X = 1.0;
+static const long double GL_CANVAS_MIN_Y = -1.0;
+//static const long double GL_CANVAS_MAX_Y = 1.0;
+static const long double REAL_DIFF = 3.5;
+static const std::pair<long double, long double> MIN = { -2.5, -1.75 };
+//static const std::pair<long double, long double> MAX = { MIN.first + REAL_DIFF, MIN.second + REAL_DIFF };
+static const std::pair<long double, long double> IMAGE_MIN = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
 static const char *KERNEL_FILENAME = "/src/EscapeKernel.cl";
 static const char *KERNEL_FUNCTION_NAME = "escape";
 
@@ -61,7 +78,7 @@ static bool useGpu = false;
 static std::string FILE_NAME;
 
 static std::vector<std::vector<Cell*>> g_cellsClass = {};
-static double *g_cellsGPU;
+static Real *g_cellsGPU;
 static unsigned int g_maxCount = 0;
 
 int main(int argc, char *argv[]) {
@@ -139,33 +156,20 @@ int main(int argc, char *argv[]) {
     printf("\tpixels size\t\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size\t\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
     printf("\titerations\t\t %d\n", ITERATIONS);
-    printf("\tthreads\t\t\t %d\n", NUM_THREADS);
+    printf("\tgenerate with gpu \t %s\n", useGpu ? "true" : "false");
+    printf("\tthreads\t\t\t %s\n", useGpu ? "N/A" : std::to_string(NUM_THREADS).c_str());
     printf("\tcolour\t\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
     printf("\tsave to\t\t\t %s\n", save ? std::string(FILE_NAME + ".png").c_str() : "N/A");
     printf("\tpng with alpha\t\t %s\n", save ? alpha ? "true" : "false" : "N/A");
-    printf("\tgenerate with gpu \t %s\n", useGpu ? "true" : "false");
     
     std::cout << std::endl;
     
     // calculate buddhabrot
-    double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
-	double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
+    long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+	long double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
 
     if (useGpu) {
-        unsigned int count = CELLS_PER_ROW * CELLS_PER_ROW;
-        
-        g_cellsGPU = new double[count * 3];
-        double *counts = new double[count]();
-        
-        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
-            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-                double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
-                double realy = MIN.second + cellRealWidth * j;
-                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0] = realx;
-                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1] = realy;
-                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = 0;
-            }
-        }
+        cl_int err;
         
         size_t global;
         size_t local;
@@ -179,94 +183,110 @@ int main(int argc, char *argv[]) {
         cl_mem input;
         cl_mem output;
         
-        int err = 0;
-        char *source = 0;
-        size_t length = 0;
+        unsigned int count = CELLS_PER_ROW * CELLS_PER_ROW;
+        unsigned int inputCount = count * 3;
+        
+        g_cellsGPU = new Real[inputCount];
+        Real *counts = new Real[count]();
+        
+        const Real cellRealWidthGPU = (Real)cellRealWidth;
+        const std::pair<Real, Real> MIN_GPU = { (Real)MIN.first, (Real)MIN.second };
+        
+        for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                Real realx = MIN_GPU.first + cellRealWidthGPU * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+                Real realy = MIN_GPU.second + cellRealWidthGPU * j;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0] = realx;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1] = realy;
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = 0;
+            }
+        }
         
         // Connect to a compute device
-        int gpu = 1;
-        err = clGetDeviceIDs(NULL, gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, 1, &deviceId, NULL);
+        err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
         if (err != CL_SUCCESS) {
-            printf("Error: Failed to create a device group!\n");
+            std::cout << "Failed to create a device group as no GPU found. Check install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
       
         // Create a compute context
         context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
         if (!context) {
-            printf("Error: Failed to create a compute context!\n");
+            std::cout << "Failed to create a compute context. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         
         // Create a command commands
         commands = clCreateCommandQueue(context, deviceId, 0, &err);
         if (!commands) {
-            printf("Error: Failed to create a command commands!\n");
+            std::cout << "Failed to create a command commands. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         
-        source = loadTextFromFile(KERNEL_FILENAME, &length);
+        size_t length = 0;
+        char *source = loadTextFromFile(KERNEL_FILENAME, &length);
         if (length == 0) {
-            printf("Error: Failed to load kernel source!\n");
+            std::cout << "Failed to load kernel source. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         
         // Create the compute program from the source buffer
         program = clCreateProgramWithSource(context, 1, (const char **) &source, NULL, &err);
-        if (!program || err != CL_SUCCESS)
-        {
-            printf("Error: Failed to create compute program!\n");
+        if (!program || err != CL_SUCCESS) {
+            std::cout << "Failed to create compute program. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         free(source);
 
         // Build the program executable
-        // TODO: fix
         err = clBuildProgram(program, 1, &deviceId, NULL, NULL, NULL);
         if (err != CL_SUCCESS) {
             size_t len;
             char buffer[2048];
 
-            printf("Error: Failed to build program executable!\n");
+            std::cout << "Failed to build program executable. Check OpenCL install or use without -o option" << std::endl;
             clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, 2048 * 8, buffer, &len);
-            printf("%s\n", buffer);
+            std::cout << buffer << std::endl;
             return EXIT_FAILURE;
         }
 
         // Create the compute kernel from within the program
         kernel = clCreateKernel(program, KERNEL_FUNCTION_NAME, &err);
         if (!kernel || err != CL_SUCCESS) {
-            printf("Error: Failed to create compute kernel!\n");
+            std::cout << "Failed to create compute kernel. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         
         // Create the input and output arrays in device memory for our calculation
-        input = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(double) * count * 3, NULL, NULL);
-        output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(double) * count, NULL, NULL);
+        input = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(Real) * inputCount, NULL, NULL);
+        output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(Real) * count, NULL, NULL);
         if (!input || !output) {
-            printf("Error: Failed to allocate device memory!\n");
+            std::cout << "Failed to allocate device memory. Check OpenCL install or use lower resolution or iteration values" << std::endl;
             return EXIT_FAILURE;
         }
         
         // Write our data set into the input array in device memory
-        err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(double) * count * 3, g_cellsGPU, 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(Real) * inputCount, g_cellsGPU, 0, NULL, NULL);
         if (err != CL_SUCCESS) {
-            printf("Error: Failed to write to source array!\n");
+            std::cout << "Failed to write to source array. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
      
         // Set the arguments to our compute kernel
+        unsigned int antiGPU = (unsigned int)anti;
+        
         err = 0;
         err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
-        err |= clSetKernelArg(kernel, 1, sizeof(double), &MIN.first);
-        err |= clSetKernelArg(kernel, 2, sizeof(double), &MIN.second);
+        err |= clSetKernelArg(kernel, 1, sizeof(Real), &MIN_GPU.first);
+        err |= clSetKernelArg(kernel, 2, sizeof(Real), &MIN_GPU.second);
         err |= clSetKernelArg(kernel, 3, sizeof(unsigned int), &ITERATIONS);
         err |= clSetKernelArg(kernel, 4, sizeof(unsigned int), &CELLS_PER_ROW);
-        err |= clSetKernelArg(kernel, 5, sizeof(double), &cellRealWidth);
-        err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &anti);
-        err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &output);
+        err |= clSetKernelArg(kernel, 5, sizeof(Real), &cellRealWidthGPU);
+        err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &antiGPU);
+        err |= clSetKernelArg(kernel, 7, ITERATIONS, NULL);
+        err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &output);
         if (err != CL_SUCCESS) {
-            printf("Error: Failed to set kernel arguments! %d\n", err);
+            std::cout << "Failed to set kernel arguments: " << err << std::endl;
             return EXIT_FAILURE;
         }
         
@@ -275,16 +295,21 @@ int main(int argc, char *argv[]) {
         // Get the maximum work group size for executing the kernel on the device
         err = clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
         if (err != CL_SUCCESS) {
-            printf("Error: Failed to retrieve kernel work group info! %d\n", err);
+            std::cout << "Failed to retrieve kernel work group info: " << err << std::endl;
             return EXIT_FAILURE;
         }
         
         // Execute the kernel over the entire range of our 1d input data set
         // using the maximum number of work group items for this device
-        global = count;
+        if (count % local == 0) {
+            global = count;
+        } else {
+            global = (floor(count / local) + 1) * local;
+        }
+        
         err = clEnqueueNDRangeKernel(commands, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
         if (err) {
-            printf("Error: Failed to execute kernel!\n");
+            std::cout << "Failed to execute kernel. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
      
@@ -292,28 +317,37 @@ int main(int argc, char *argv[]) {
         clFinish(commands);
      
         // Read back the results from the device to verify the output
-        err = clEnqueueReadBuffer( commands, output, CL_TRUE, 0, sizeof(float) * count, counts, 0, NULL, NULL );
+        err = clEnqueueReadBuffer( commands, output, CL_TRUE, 0, sizeof(Real) * count, counts, 0, NULL, NULL );
         if (err != CL_SUCCESS) {
-            printf("Error: Failed to read output array! %d\n", err);
+            std::cout << "Error: Failed to read output array: " << err << std::endl;
             return EXIT_FAILURE;
         }
         
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
             for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = counts[i * CELLS_PER_ROW + j];
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = (unsigned int)counts[i * CELLS_PER_ROW + j];
                 
                 if (g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] > g_maxCount)
                     g_maxCount = g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2];
             }
         }
+        
+        clReleaseMemObject(input);
+        clReleaseMemObject(output);
+        clReleaseProgram(program);
+        clReleaseKernel(kernel);
+        clReleaseCommandQueue(commands);
+        clReleaseContext(context);
+        
+        delete[] counts;
     } else {
         std::vector<Cell*> holding;
 
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
             holding.clear();
             for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-                double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
-                double realy = MIN.second + cellRealWidth * j;
+                long double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+                long double realy = MIN.second + cellRealWidth * j;
                 holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &MIN, &IMAGE_MIN));
             }
 
@@ -382,8 +416,8 @@ int main(int argc, char *argv[]) {
 
             png_bytep rpptr = row_pointers[i];
             for (unsigned int j = 0; j < WINDOW_WIDTH; ++j) {
-                double percentageOfMax;
-                if (useGpu) // TODO: change
+                long double percentageOfMax;
+                if (useGpu)
                     percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
                 else
                     percentageOfMax = log(g_cellsClass[i][j]->counter) / log(g_maxCount);
@@ -449,17 +483,16 @@ static void displayCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
     
     if (useGpu) {
-        double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
-        double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
+        long double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
+        long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
         
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
             for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                long double imagex = abs(((MIN.first - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.first;
+                long double imagey = abs(((MIN.second - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.second;
                 
-                double imagex = abs(((MIN.first - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 0]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.first;
-                double imagey = abs(((MIN.second - g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 1]) / cellRealWidth ) * cellImageWidth) + IMAGE_MIN.second;
-                
-                double percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
-                double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
+                long double percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
+                long double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
                 glColor4f(COLOUR_R / 255.0f , COLOUR_G / 255.0f, COLOUR_B / 255.0f, brightness);
                 glRectd(imagey, imagex, imagey + cellImageWidth, imagex + cellImageWidth); // x and y flipped to render it vertically
             }

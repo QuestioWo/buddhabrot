@@ -15,23 +15,23 @@
 #define SRC_CELL_HPP_
 
 struct Cell {
-	double x;
-	double y;
+	long double x;
+	long double y;
 
-	double imagex;
-	double imagey;
+	long double imagex;
+	long double imagey;
 
-	double width;
+	long double width;
 
-	double imagewidth;
+	long double imagewidth;
 
 	unsigned int counter;
 
 	ComplexNumber complex;
 
-	Cell(double x, double y, double width, double imagewidth, const std::pair<double, double> *realMin, const std::pair<double, double> *imageMin);
+	Cell(long double x, long double y, long double width, long double imagewidth, const std::pair<long double, long double> *realMin, const std::pair<long double, long double> *imageMin);
 
-	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, const std::pair<double, double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti);
+	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, const std::pair<long double, long double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti);
 
     void render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB);
 };
