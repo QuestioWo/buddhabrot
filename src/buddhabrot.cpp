@@ -44,9 +44,13 @@
 #if defined(DOUBLE_SUPPORT_AVAILABLE)
     // double
     typedef double Real;
+    #define PRECISION (64)
+
 #else
     // float
     typedef float Real;
+    #define PRECISION (32)
+
 #endif
 
 static const long double GL_CANVAS_MIN_X = -1.0;
@@ -156,7 +160,7 @@ int main(int argc, char *argv[]) {
     printf("\tpixels size\t\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size\t\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
     printf("\titerations\t\t %d\n", ITERATIONS);
-    printf("\tgenerate with gpu \t %s\n", useGpu ? "true" : "false");
+    printf("\tgenerate with GPU\t %s\n", useGpu ? "true" : "false");
     printf("\tthreads\t\t\t %s\n", useGpu ? "N/A" : std::to_string(NUM_THREADS).c_str());
     printf("\tcolour\t\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
     printf("\tsave to\t\t\t %s\n", save ? std::string(FILE_NAME + ".png").c_str() : "N/A");
@@ -169,6 +173,7 @@ int main(int argc, char *argv[]) {
 	long double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
 
     if (useGpu) {
+        printf("Using %d-bit %s floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
         cl_int err;
         
         size_t global;
@@ -187,7 +192,7 @@ int main(int argc, char *argv[]) {
         unsigned int inputCount = count * 3;
         
         g_cellsGPU = new Real[inputCount];
-        Real *counts = new Real[count]();
+        unsigned int *counts = new unsigned int[count]();
         
         const Real cellRealWidthGPU = (Real)cellRealWidth;
         const std::pair<Real, Real> MIN_GPU = { (Real)MIN.first, (Real)MIN.second };
@@ -202,21 +207,18 @@ int main(int argc, char *argv[]) {
             }
         }
         
-        // Connect to a compute device
         err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
         if (err != CL_SUCCESS) {
             std::cout << "Failed to create a device group as no GPU found. Check install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
       
-        // Create a compute context
         context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
         if (!context) {
             std::cout << "Failed to create a compute context. Check OpenCL install or use without -o option" << std::endl;
             return EXIT_FAILURE;
         }
         
-        // Create a command commands
         commands = clCreateCommandQueue(context, deviceId, 0, &err);
         if (!commands) {
             std::cout << "Failed to create a command commands. Check OpenCL install or use without -o option" << std::endl;
@@ -230,7 +232,6 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
         
-        // Create the compute program from the source buffer
         program = clCreateProgramWithSource(context, 1, (const char **) &source, NULL, &err);
         if (!program || err != CL_SUCCESS) {
             std::cout << "Failed to create compute program. Check OpenCL install or use without -o option" << std::endl;
@@ -239,7 +240,10 @@ int main(int argc, char *argv[]) {
         free(source);
 
         // Build the program executable
-        err = clBuildProgram(program, 1, &deviceId, NULL, NULL, NULL);
+        char compileArgs[128];
+        sprintf(compileArgs, "-DITERATIONS=%d -DCELLS_PER_ROW=%d -DANTI=%d", ITERATIONS, CELLS_PER_ROW, (unsigned int)anti);
+        
+        err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
         if (err != CL_SUCCESS) {
             size_t len;
             char buffer[2048];
@@ -250,7 +254,6 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
 
-        // Create the compute kernel from within the program
         kernel = clCreateKernel(program, KERNEL_FUNCTION_NAME, &err);
         if (!kernel || err != CL_SUCCESS) {
             std::cout << "Failed to create compute kernel. Check OpenCL install or use without -o option" << std::endl;
@@ -259,13 +262,12 @@ int main(int argc, char *argv[]) {
         
         // Create the input and output arrays in device memory for our calculation
         input = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(Real) * inputCount, NULL, NULL);
-        output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(Real) * count, NULL, NULL);
+        output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * count, NULL, NULL);
         if (!input || !output) {
             std::cout << "Failed to allocate device memory. Check OpenCL install or use lower resolution or iteration values" << std::endl;
             return EXIT_FAILURE;
         }
         
-        // Write our data set into the input array in device memory
         err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(Real) * inputCount, g_cellsGPU, 0, NULL, NULL);
         if (err != CL_SUCCESS) {
             std::cout << "Failed to write to source array. Check OpenCL install or use without -o option" << std::endl;
@@ -273,18 +275,12 @@ int main(int argc, char *argv[]) {
         }
      
         // Set the arguments to our compute kernel
-        unsigned int antiGPU = (unsigned int)anti;
-        
         err = 0;
         err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
         err |= clSetKernelArg(kernel, 1, sizeof(Real), &MIN_GPU.first);
         err |= clSetKernelArg(kernel, 2, sizeof(Real), &MIN_GPU.second);
-        err |= clSetKernelArg(kernel, 3, sizeof(unsigned int), &ITERATIONS);
-        err |= clSetKernelArg(kernel, 4, sizeof(unsigned int), &CELLS_PER_ROW);
-        err |= clSetKernelArg(kernel, 5, sizeof(Real), &cellRealWidthGPU);
-        err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &antiGPU);
-        err |= clSetKernelArg(kernel, 7, ITERATIONS, NULL);
-        err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &output);
+        err |= clSetKernelArg(kernel, 3, sizeof(Real), &cellRealWidthGPU);
+        err |= clSetKernelArg(kernel, 4, sizeof(cl_mem), &output);
         if (err != CL_SUCCESS) {
             std::cout << "Failed to set kernel arguments: " << err << std::endl;
             return EXIT_FAILURE;
@@ -292,20 +288,17 @@ int main(int argc, char *argv[]) {
         
         std::cout << "Memory successfully yoinked" << std::endl;
         
-        // Get the maximum work group size for executing the kernel on the device
         err = clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
         if (err != CL_SUCCESS) {
             std::cout << "Failed to retrieve kernel work group info: " << err << std::endl;
             return EXIT_FAILURE;
         }
         
-        // Execute the kernel over the entire range of our 1d input data set
-        // using the maximum number of work group items for this device
-        if (count % local == 0) {
+        // Execute the kernel
+        if (count % local == 0)
             global = count;
-        } else {
+        else
             global = (floor(count / local) + 1) * local;
-        }
         
         err = clEnqueueNDRangeKernel(commands, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
         if (err) {
@@ -313,11 +306,9 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
      
-        // Wait for the command commands to get serviced before reading back results
         clFinish(commands);
      
-        // Read back the results from the device to verify the output
-        err = clEnqueueReadBuffer( commands, output, CL_TRUE, 0, sizeof(Real) * count, counts, 0, NULL, NULL );
+        err = clEnqueueReadBuffer(commands, output, CL_TRUE, 0, sizeof(unsigned int) * count, counts, 0, NULL, NULL);
         if (err != CL_SUCCESS) {
             std::cout << "Error: Failed to read output array: " << err << std::endl;
             return EXIT_FAILURE;
@@ -325,7 +316,7 @@ int main(int argc, char *argv[]) {
         
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
             for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = (unsigned int)counts[i * CELLS_PER_ROW + j];
+                g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] = counts[i * CELLS_PER_ROW + j];
                 
                 if (g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2] > g_maxCount)
                     g_maxCount = g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2];
