@@ -2,14 +2,24 @@ cmake_minimum_required( VERSION 3.0.2 )
 
 project( buddhabrot )
 
-add_compile_options( -std=c++17 )
+add_compile_options( -std=c++11 )
+
+# Linux specific requirements for threading
+if (UNIX)
+	set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+	set(CMAKE_HAVE_THREADS_LIBRARY 1)
+	set(CMAKE_USE_WIN32_THREADS_INIT 0)
+	set(CMAKE_USE_PTHREADS_INIT 1)
+	set(THREADS_PREFER_PTHREAD_FLAG ON)
+endif(UNIX)
 
 # Find OpenGL and GLUT
 find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
 find_package(GLUT REQUIRED)
 message(STATUS "GLUT_FOUND := TRUE")
-find_package(OpenCL REQUIRED)
+find_package(OpenCL 1.2 REQUIRED)
 message(STATUS "OPENCL_FOUND := TRUE")
 
 # Find libpng using PkgConfig
@@ -27,8 +37,6 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
 # Build Application
-include_directories( src )
-
 add_executable( ${PROJECT_NAME}
 	${SOURCE_FILES}
 	${HEADER_FILES}

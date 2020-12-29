@@ -54,14 +54,14 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-i 2500"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-a"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-w 1001"
+            argument = "-w 2001"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
