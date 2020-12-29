@@ -8,7 +8,7 @@
 //===========================================================================//
 
 #include "Cell.hpp"
-#include "KernelHelper.cpp"
+#include "KernelHelper.hpp"
 
 #ifdef __APPLE__
     #define GL_SILENCE_DEPRECATION
@@ -26,26 +26,6 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-
-#if defined(cl_khr_fp64)
-    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#elif defined(cl_amd_fp64)
-    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#endif
-
-#if defined(DOUBLE_SUPPORT_AVAILABLE)
-    // double
-    typedef double Real;
-    #define PRECISION (64)
-
-#else
-    // float
-    typedef float Real;
-    #define PRECISION (32)
-
-#endif
 
 static const long double GL_CANVAS_MIN_X = -1.0;
 static const long double GL_CANVAS_MAX_X = 1.0;

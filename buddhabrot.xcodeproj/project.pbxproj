@@ -13,6 +13,7 @@
 		1F18FFD5257ECAEE00BBA6D2 /* ComplexNumber.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F18FFD1257ECAEE00BBA6D2 /* ComplexNumber.cpp */; };
 		1F18FFD6257ECAEE00BBA6D2 /* buddhabrot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F18FFD3257ECAEE00BBA6D2 /* buddhabrot.cpp */; };
 		1F96F710259983DF008320A5 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F96F70F259983DF008320A5 /* OpenCL.framework */; };
+		1F96F728259AD842008320A5 /* KernelHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F96F720259ACCAB008320A5 /* KernelHelper.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,7 @@
 		1F96F70F259983DF008320A5 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		1F96F71225999220008320A5 /* EscapeKernel.cl */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.opencl; path = EscapeKernel.cl; sourceTree = "<group>"; };
 		1F96F720259ACCAB008320A5 /* KernelHelper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = KernelHelper.cpp; sourceTree = "<group>"; };
+		1F96F726259AD527008320A5 /* KernelHelper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = KernelHelper.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				1F18FFD2257ECAEE00BBA6D2 /* ComplexNumber.hpp */,
 				1F96F71225999220008320A5 /* EscapeKernel.cl */,
 				1F96F720259ACCAB008320A5 /* KernelHelper.cpp */,
+				1F96F726259AD527008320A5 /* KernelHelper.hpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -166,6 +169,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F96F728259AD842008320A5 /* KernelHelper.cpp in Sources */,
 				1F18FFD6257ECAEE00BBA6D2 /* buddhabrot.cpp in Sources */,
 				1F18FFD4257ECAEE00BBA6D2 /* Cell.cpp in Sources */,
 				1F18FFD5257ECAEE00BBA6D2 /* ComplexNumber.cpp in Sources */,

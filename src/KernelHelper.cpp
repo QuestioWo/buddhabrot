@@ -7,40 +7,10 @@
 ///
 //===========================================================================//
 
-#ifdef __APPLE__
-    #include <OpenCL/opencl.h>
-#else
-    #include <CL/opencl.h>
-#endif
-
 #include <filesystem>
 #include <iostream>
 
-#if defined(cl_khr_fp64)
-    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#elif defined(cl_amd_fp64)
-    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#endif
-
-#if defined(DOUBLE_SUPPORT_AVAILABLE)
-    // double
-    typedef double Real;
-    #define PRECISION (64)
-
-#else
-    // float
-    typedef float Real;
-    #define PRECISION (32)
-
-#endif
-
-static const char *KERNEL_FILENAME = "/src/EscapeKernel.cl";
-static const char *KERNEL_FUNCTION_NAME = "escape";
-
-static int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength);
-void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *iterations, unsigned int *cellsPerRow, const std::pair<long double, long double> *min, long double *cellRealWidth, bool *anti, char **kernelFileName, char **kernelFunctionName);
+#include "KernelHelper.hpp"
 
 void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *iterations, unsigned int *cellsPerRow, const std::pair<long double, long double> *min, long double *cellRealWidth, bool *anti) {
     printf("Using %d-bit %s floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
@@ -204,7 +174,7 @@ void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *i
     delete[] counts;
 }
 
-static int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength) {
+int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength) {
     size_t length = 0;
     
     std::filesystem::path p = std::filesystem::current_path();
