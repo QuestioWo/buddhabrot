@@ -45,6 +45,7 @@
 		1F5A8ACB2591161E00A6F80E /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		1F96F70F259983DF008320A5 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		1F96F71225999220008320A5 /* EscapeKernel.cl */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.opencl; path = EscapeKernel.cl; sourceTree = "<group>"; };
+		1F96F720259ACCAB008320A5 /* KernelHelper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = KernelHelper.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +105,7 @@
 				1F18FFD1257ECAEE00BBA6D2 /* ComplexNumber.cpp */,
 				1F18FFD2257ECAEE00BBA6D2 /* ComplexNumber.hpp */,
 				1F96F71225999220008320A5 /* EscapeKernel.cl */,
+				1F96F720259ACCAB008320A5 /* KernelHelper.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
