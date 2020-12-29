@@ -1,15 +1,15 @@
 ## Renders
-Render produced for 1001 x 1001 pixels at 2500 iterations :
+Render produced for 2001 x 2001 pixels at 2500 iterations :
 
-![Buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/1001x2500.png?raw=true)
+![Buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/2001x2500.png?raw=true)
 
-The command that can be used for getting this result is `./buddhabrot -w 1001 -i 2500 -r 128 -s "1001x2500"`
+The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500 -r 128`
 
-This program also supports [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) rendering. The below image is using the same 1001x2500 pixels and iterations :
+This program also supports [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) rendering. The below image is using the same 2001x2500 pixels and iterations :
 
-![Anti-buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/1001x2500anti.png?raw=true)
+![Anti-buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/2001x2500anti.png?raw=true)
 
-The command that can be used for getting this result is `./buddhabrot -w 1001 -i 2500 -r 128 -s "1001x2500anti" -a`
+The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500anti -a -r 128`
 
 ## Running
 
