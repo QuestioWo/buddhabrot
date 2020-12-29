@@ -24,6 +24,7 @@
 
 #include <getopt.h>
 #include <iostream>
+#include <math.h>
 #include <thread>
 #include <vector>
 
