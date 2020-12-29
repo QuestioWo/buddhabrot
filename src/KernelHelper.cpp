@@ -9,6 +9,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <math.h>
 
 #include "KernelHelper.hpp"
 

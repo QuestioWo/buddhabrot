@@ -6,7 +6,7 @@ if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "Require at least gcc-8.0")
 endif()
 
-add_compile_options( -std=c++17 -lstdc++fs )
+add_compile_options( -std=c++17 )
 
 # Find OpenGL and GLUT
 find_package(OpenGL REQUIRED)
