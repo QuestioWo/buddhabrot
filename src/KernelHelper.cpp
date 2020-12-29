@@ -7,14 +7,13 @@
 ///
 //===========================================================================//
 
-#include <filesystem>
 #include <iostream>
 #include <math.h>
 
 #include "KernelHelper.hpp"
 
 void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *iterations, unsigned int *cellsPerRow, const std::pair<long double, long double> *min, long double *cellRealWidth, bool *anti) {
-    printf("Using %d-bit %s floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
+    printf("Using %d-bit (%s) floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
     cl_int err;
 
     size_t global;
@@ -178,9 +177,10 @@ void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *i
 int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength) {
     size_t length = 0;
     
-    std::filesystem::path p = std::filesystem::current_path();
+//    std::filesystem::path p = std::filesystem::current_path();
     
-    p += filename;
+//    p += filename;
+    std::string p(filename);
     
     FILE *file = fopen(p.c_str(), "rb");
     if(file == NULL) {

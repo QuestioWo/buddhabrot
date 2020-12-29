@@ -39,7 +39,7 @@
 
 #endif
 
-static const char *KERNEL_FILENAME = "/src/EscapeKernel.cl";
+static const char *KERNEL_FILENAME = "src/EscapeKernel.cl";
 static const char *KERNEL_FUNCTION_NAME = "escape";
 
 int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength);

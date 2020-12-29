@@ -6,7 +6,7 @@ if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "Require at least gcc-8.0")
 endif()
 
-add_compile_options( -std=c++17 )
+add_compile_options( -std=c++11 )
 
 # Linux specific requirements for threading
 if (UNIX)
@@ -23,7 +23,7 @@ find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
 find_package(GLUT REQUIRED)
 message(STATUS "GLUT_FOUND := TRUE")
-find_package(OpenCL REQUIRED)
+find_package(OpenCL 1.2 EXACT REQUIRED)
 message(STATUS "OPENCL_FOUND := TRUE")
 
 # Find libpng using PkgConfig
