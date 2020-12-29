@@ -25,7 +25,8 @@ git clone https://github.com/QuestioWo/buddhabrot.git
 mkdir -p buddhabrot/build && cd buddhabrot/build
 cmake ..
 make
-./buddhabrot
+cd ../
+./build/buddhabrot
 ```
 
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. Examples of the program running can be found above
