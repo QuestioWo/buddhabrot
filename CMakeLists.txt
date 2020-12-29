@@ -2,6 +2,10 @@ cmake_minimum_required( VERSION 3.0.2 )
 
 project( buddhabrot )
 
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+    message(FATAL_ERROR "Require at least gcc-8.0")
+endif()
+
 add_compile_options( -std=c++17 -lstdc++fs )
 
 # Find OpenGL and GLUT
