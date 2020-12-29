@@ -90,7 +90,7 @@ void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *i
         char buffer[2048];
 
         std::cout << "Failed to build program executable. Check OpenCL install or use without -o option" << std::endl;
-        clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, 2048 * 8, buffer, &len);
+        clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, sizeof(char) * 2048, buffer, &len);
         std::cout << buffer << std::endl;
         exit(1);
     }
