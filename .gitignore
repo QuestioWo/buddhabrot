@@ -6,7 +6,7 @@
 /Intermediates
 
 **/xcuserdata/
-#**/xcschemes/
+**/xcschemes/
 
 # Misc.
 .DS_Store
