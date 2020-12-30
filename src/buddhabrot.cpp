@@ -39,6 +39,7 @@ static const std::pair<long double, long double> IMAGE_MIN = { GL_CANVAS_MIN_X, 
 
 static void displayCallback();
 static void showUsage(std::string name);
+static void executeRowsEscapes(unsigned int threadId, unsigned int threadsTotal);
 
 static unsigned int ITERATIONS = 500;
 static unsigned int WINDOW_WIDTH = 501;
@@ -144,9 +145,9 @@ int main(int argc, char *argv[]) {
     long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
 	long double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
 
-    if (useGpu) {
+    if (useGpu)
         calculateCells(&g_cellsGPU, &g_maxCount, &ITERATIONS, &CELLS_PER_ROW, &MIN, &cellRealWidth, &anti);
-    } else {
+    else {
         std::vector<Cell*> holding;
 
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
@@ -159,22 +160,17 @@ int main(int argc, char *argv[]) {
 
             g_cellsClass.push_back(holding);
         }
+        
+        g_cellsClass.shrink_to_fit();
 
         std::cout << "Memory successfully yoinked" << std::endl;
         
         std::vector<std::thread*> threads;
         
-        for (std::vector<Cell*> h : g_cellsClass) {
-            for (unsigned int i = 0; i < h.size(); ++i) {
-                Cell *cell = h[i];
-                if (i >= (NUM_THREADS - 1)) { // - 1 due to the "main" thread as well
-                    threads[0]->join();
-                    delete threads[0];
-                    threads.erase(threads.begin());
-                }
-                threads.push_back(new std::thread(Cell::escape, &cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti));
-            }
-        }
+        for (unsigned int i = 0; i < (NUM_THREADS - 1); ++i)
+            threads.push_back(new std::thread(executeRowsEscapes, i, NUM_THREADS));
+        
+        executeRowsEscapes(NUM_THREADS, NUM_THREADS);
 
         for (unsigned int i = 0; i < threads.size(); ++i) {
             threads[i]->join();
@@ -329,4 +325,21 @@ static void showUsage(std::string name) {
         << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t  defaults to 255\n"
         << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals defaults to the number of CPU cores\n"
         << std::endl;
+}
+
+static void executeRowsEscapes(unsigned int threadId, unsigned int threadsTotal) {
+    unsigned int groups = CELLS_PER_ROW / threadsTotal;
+    for (unsigned int i = 0; i < groups; ++i) {
+        unsigned int currentColumn = i * threadsTotal + threadId;
+        
+        std::vector<Cell*> h = g_cellsClass[currentColumn];
+        for (Cell *cell : h)
+            Cell::escape(&cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti);
+    }
+    
+    if (CELLS_PER_ROW > groups * threadsTotal + threadId) {
+        std::vector<Cell*> h = g_cellsClass[groups * threadsTotal + threadId];
+        for (Cell *cell : h)
+            Cell::escape(&cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti);
+    }
 }

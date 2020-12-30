@@ -3,13 +3,13 @@ Render produced for 2001 x 2001 pixels at 2500 iterations :
 
 ![Buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/2001x2500.png?raw=true)
 
-The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500 -r 128`
+The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500 -r 128`. Computation takes around 3 seconds using the `-o` flag to run the command on the GPU, and around 53 seconds for the command without the flag, so running on the CPU.
 
 This program also supports [anti-buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot#Nuances) rendering. The below image is using the same 2001x2500 pixels and iterations :
 
 ![Anti-buddhabrot](https://github.com/QuestioWo/buddhabrot/blob/main/assets/2001x2500anti.png?raw=true)
 
-The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500anti -a -r 128`
+The command that can be used for getting this result is `./build/buddhabrot -o -w 2001 -i 2500 -s 2001x2500anti -a -r 128`. Computation takes around 6 seconds using the `-o` flag to run the command on the GPU, and around 53 seconds for the command without the flag, so running on the CPU.
 
 ## Running
 
