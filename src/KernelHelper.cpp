@@ -144,11 +144,11 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     }
     
     if (extraGroup) {
-        std::cout << '\t' << iterationGroups << '/' << iterationGroups << std::endl;
-        
         const unsigned int iterationFinal = abs((int)(*iterations - iterationsMax * iterationGroups));
         
         runKernel(&context, &commands, &kernel, &deviceId, &interimResults, &iterationFinal);
+        
+        std::cout << '\t' << iterationGroups << '/' << iterationGroups << std::endl;
     }
     
     clReleaseProgram(program);
