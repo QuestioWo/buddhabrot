@@ -14,11 +14,21 @@ if (UNIX)
 	set(THREADS_PREFER_PTHREAD_FLAG ON)
 endif(UNIX)
 
+option(USE_OPENGL "Build to be able to use the OpenGL and GLUT libraries" ON)
+
 # Find OpenGL and GLUT
-find_package(OpenGL REQUIRED)
-message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
-find_package(GLUT REQUIRED)
-message(STATUS "GLUT_FOUND := TRUE")
+if (USE_OPENGL)
+	find_package(OpenGL REQUIRED)
+	message(STATUS "OPENGL_FOUND := TRUE") # Would not run if not found as required
+	find_package(GLUT REQUIRED)
+	message(STATUS "GLUT_FOUND := TRUE")
+
+	add_compile_options( -DUSE_OPENGL=true )
+else ()
+	add_compile_options( -DUSE_OPENGL=false )
+endif (USE_OPENGL)
+
+# Find OpenCL
 find_package(OpenCL 1.2 REQUIRED)
 message(STATUS "OPENCL_FOUND := TRUE")
 

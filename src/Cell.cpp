@@ -9,13 +9,16 @@
 
 #include "Cell.hpp"
 
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl.h>
-#include <GLUT/glut.h>
-#else
-#include <GL/gl.h>
-#include <GL/glut.h>
+#if USE_OPENGL
+    #ifdef __APPLE__
+        #define GL_SILENCE_DEPRECATION
+        #define GLUT_SILENCE_DEPRECATION
+        #include <OpenGL/gl.h>
+        #include <GLUT/glut.h>
+    #else
+        #include <GL/gl.h>
+        #include <GL/glut.h>
+    #endif
 #endif
 
 #include <iostream>
@@ -56,9 +59,11 @@ void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, cons
 	}
 }
 
+#if USE_OPENGL
 void Cell::render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB) {
     long double percentageOfMax = log(counter) / log(maxCount);
     long double brightness = percentageOfMax > 0.25 ? percentageOfMax : 0.0;
     glColor4f(colourR / 255.0f , colourG / 255.0f, colourB / 255.0f, brightness);
     glRectd(imagey, imagex, imagey + imagewidth, imagex + imagewidth); // x and y flipped to render it vertically
 }
+#endif

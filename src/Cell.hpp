@@ -35,7 +35,9 @@ public:
 
 	static void escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, const std::pair<long double, long double> *min, unsigned int iterations, unsigned int cellsPerRow, unsigned int *maxCount, bool anti);
 
+#if USE_OPENGL
     void render(unsigned int maxCount, unsigned int colourR, unsigned int colourG, unsigned int colourB);
+#endif
 };
 
 #endif // SRC_CELL_HPP_

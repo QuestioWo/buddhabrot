@@ -12,14 +12,16 @@
 #include "io/PNGReader.hpp"
 #include "io/CSVReader.hpp"
 
-#ifdef __APPLE__
-    #define GL_SILENCE_DEPRECATION
-    #define GLUT_SILENCE_DEPRECATION
-    #include <OpenGL/gl.h>
-    #include <GLUT/glut.h>
-#else
-    #include <GL/gl.h>
-    #include <GL/glut.h>
+#if USE_OPENGL
+    #ifdef __APPLE__
+        #define GL_SILENCE_DEPRECATION
+        #define GLUT_SILENCE_DEPRECATION
+        #include <OpenGL/gl.h>
+        #include <GLUT/glut.h>
+    #else
+        #include <GL/gl.h>
+        #include <GL/glut.h>
+    #endif
 #endif
 
 #include <getopt.h>
@@ -37,7 +39,9 @@ static const std::pair<long double, long double> MIN = { -2.5, -1.75 };
 //static const std::pair<long double, long double> MAX = { MIN.first + REAL_DIFF, MIN.second + REAL_DIFF };
 static const std::pair<long double, long double> IMAGE_MIN = { GL_CANVAS_MIN_X, GL_CANVAS_MIN_Y };
 
-static void displayCallback();
+#if USE_OPENGL
+    static void displayCallback();
+#endif
 static void showUsage(std::string name);
 static void executeRowsEscapes(unsigned int threadId, unsigned int threadsTotal);
 
@@ -49,10 +53,15 @@ static unsigned char COLOUR_R = 0;
 static unsigned char COLOUR_G = 0;
 static unsigned char COLOUR_B = 255;
 static bool anti = false;
-static bool save = false;
 static bool alpha = false;
 static bool useGpu = false;
-static std::string FILE_NAME;
+#if USE_OPENGL
+    static bool save = false;
+    static std::string FILE_NAME;
+#else
+    static bool save = true;
+    static std::string FILE_NAME = "buddhabrot";
+#endif
 
 static std::vector<std::vector<Cell*>> g_cellsClass = {};
 static Real *g_cellsGPU;
@@ -184,6 +193,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Max count := " << g_maxCount << std::endl;
     
     // display buddhabrot
+    #if USE_OPENGL
     if (!save) {
         glutInit(&argc, argv);
         glutInitWindowSize(WINDOW_WIDTH, WINDOW_WIDTH);
@@ -199,6 +209,7 @@ int main(int argc, char *argv[]) {
         
         glutMainLoop();
     } else {
+    #endif
         PNGReader picture((char*)(FILE_NAME + ".png").c_str(), WINDOW_WIDTH, CELLS_PER_ROW, COLOUR_R, COLOUR_G, COLOUR_B, g_maxCount, alpha);
         CSVReader csv((char*)(FILE_NAME + ".csv").c_str(), WINDOW_WIDTH);
         
@@ -209,11 +220,14 @@ int main(int argc, char *argv[]) {
             picture.write(&g_cellsClass);
             csv.write(&g_cellsClass);
         }
+    #if USE_OPENGL
     }
+    #endif
 
 	return 0;
 }
 
+#if USE_OPENGL
 static void displayCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
     
@@ -241,6 +255,7 @@ static void displayCallback() {
     
     glFlush();
 }
+#endif
 
 static void showUsage(std::string name) {
     std::cerr << "Usage: " << name << " <option(s)>\n"
@@ -249,7 +264,11 @@ static void showUsage(std::string name) {
         << "\t-a \t\t\t Generate an anti-buddhabrot \t\t\t\t\t\t\t defaults to false\n"
         << "\t-o \t\t\t Calculate the buddhabrot using OpenCL, i.e using GPU \t\t\t\t defaults to false\n"
         << "\t-4 \t\t\t Generate png with alpha based-brightness; viewer dependant \t\t\t defaults to false\n"
+    #if USE_OPENGL
         << "\t-s FILE_NAME\t\t Saves buddhabrot as a png and csv to the specified (FILE_NAME + '.png'/'.csv')  defaults to not save\n"
+    #else
+        << "\t-s FILE_NAME\t\t Saves buddhabrot as a png and csv to the specified (FILE_NAME + '.png'/'.csv')  defaults to 'buddabrot'\n"
+    #endif
         << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t\t\t defaults to 501\n"
         << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t\t\t defaults to WINDOW_WIDTH\n"
         << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point \t\t defaults to 500\n"
