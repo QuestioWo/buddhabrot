@@ -17,6 +17,7 @@ The command that can be used for getting this result is `./build/buddhabrot -o -
 * OpenGL
 * GLUT
 * libpng
+* OpenCL
 
 ### Building & Usgae
 
