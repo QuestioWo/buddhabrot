@@ -16,6 +16,8 @@
     #include <CL/opencl.h>
 #endif
 
+#include <tuple>
+
 #ifndef KernelHelper_hpp
 #define KernelHelper_hpp
 

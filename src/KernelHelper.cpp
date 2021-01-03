@@ -78,8 +78,14 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
 
     err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
     if (err != CL_SUCCESS) {
-        std::cout << "Failed to create a device group as no GPU found. Check install or use without -o option" << std::endl;
-        exit(1);
+        std::cout << "GPU not found. Check install or use without -o option" << std::endl;
+        std::cout << "Defaulting to trying CPU" << std::endl;
+        
+        err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_CPU, 1, &deviceId, NULL);
+        if (err != CL_SUCCESS) {
+            std::cout << "Failed to create a CPU compute context as well. Check OpenCL install or use without -o option" << std::endl;
+            exit(1);
+        }
     }
 
     context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
