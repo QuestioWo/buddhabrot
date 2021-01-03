@@ -54,6 +54,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     cl_command_queue commands;
     cl_kernel kernel;
     cl_program program;
+    cl_platform_id platformId;
     cl_device_id deviceId;
 
     (*g_cellsGPU) = new Real[count * 3];
@@ -76,27 +77,28 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
         }
     }
 
-    err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
+    cl_uint numPlatforms;
+    err = clGetPlatformIDs(1, &platformId, &numPlatforms);
     if (err != CL_SUCCESS) {
-        std::cout << "GPU not found. Check install or use without -o option" << std::endl;
+        std::cout << "Failed to find an OpenCL platform. Check OpenCL install or use without -o option" << std::endl;
+        exit(1);
+    }
+    
+    err = clGetDeviceIDs(platformId, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
+    if (err != CL_SUCCESS) {
+        std::cout << "GPU device not found. Check install or use without -o option" << std::endl;
         std::cout << "Defaulting to trying CPU" << std::endl;
-        
-        err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_CPU, 1, &deviceId, NULL);
-        if (err != CL_SUCCESS) {
-            std::cout << "Failed to create a CPU compute context as well. Check OpenCL install or use without -o option" << std::endl;
-            exit(1);
-        }
     }
 
     context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
     if (!context) {
-        std::cout << "Failed to create a compute context. Check OpenCL install or use without -o option" << std::endl;
+        std::cout << "Couldn't create a compute context using GPU. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
 
     commands = clCreateCommandQueue(context, deviceId, 0, &err);
     if (!commands) {
-        std::cout << "Failed to create a command commands. Check OpenCL install or use without -o option" << std::endl;
+        std::cout << "Failed to create a command queue. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
 
@@ -104,13 +106,13 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     char *source;
     err = loadTextFromFile(KERNEL_FILENAME, &source, &length);
     if (err != 0) {
-        std::cout << "Failed to load kernel source. Check OpenCL install or use without -o option" << std::endl;
+        std::cout << "Failed to load kernel source. Check where program is executed from, must be able to see src/, which contains EscapeKernel.cl" << std::endl;
         exit(1);
     }
 
     program = clCreateProgramWithSource(context, 1, (const char **) &source, NULL, &err);
     if (!program || err != CL_SUCCESS) {
-        std::cout << "Failed to create compute program. Check OpenCL install or use without -o option" << std::endl;
+        std::cout << "Failed to create program from source. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
     free(source);
@@ -132,7 +134,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
 
     kernel = clCreateKernel(program, KERNEL_FUNCTION_NAME, &err);
     if (!kernel || err != CL_SUCCESS) {
-        std::cout << "Failed to create compute kernel. Check OpenCL install or use without -o option" << std::endl;
+        std::cout << "Failed to create kernel. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
     
