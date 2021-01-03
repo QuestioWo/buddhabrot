@@ -6,10 +6,11 @@
 /Intermediates
 
 **/xcuserdata/
-**/xcschemes/
+**/test.xcscheme
 
 # Misc.
 .DS_Store
+run.*
 
 # Final
 !.gitignore

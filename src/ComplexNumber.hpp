@@ -7,6 +7,9 @@
 ///
 //===========================================================================//
 
+#ifndef ComplexNumber_hpp
+#define ComplexNumber_hpp
+
 struct ComplexNumber {
 	long double real;
 	long double imag;
@@ -19,3 +22,5 @@ struct ComplexNumber {
 
 	long double abs();
 };
+
+#endif // ComplexNumber_hpp

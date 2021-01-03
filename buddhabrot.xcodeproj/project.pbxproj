@@ -14,6 +14,8 @@
 		1F18FFD6257ECAEE00BBA6D2 /* buddhabrot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F18FFD3257ECAEE00BBA6D2 /* buddhabrot.cpp */; };
 		1F96F710259983DF008320A5 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F96F70F259983DF008320A5 /* OpenCL.framework */; };
 		1F96F728259AD842008320A5 /* KernelHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F96F720259ACCAB008320A5 /* KernelHelper.cpp */; };
+		1FFE6ADB259E707000776771 /* CSVReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE6ADA259E707000776771 /* CSVReader.cpp */; };
+		1FFE6AE0259E709000776771 /* PNGReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FFE6ADF259E709000776771 /* PNGReader.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +50,10 @@
 		1F96F71225999220008320A5 /* EscapeKernel.cl */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.opencl; path = EscapeKernel.cl; sourceTree = "<group>"; };
 		1F96F720259ACCAB008320A5 /* KernelHelper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = KernelHelper.cpp; sourceTree = "<group>"; };
 		1F96F726259AD527008320A5 /* KernelHelper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = KernelHelper.hpp; sourceTree = "<group>"; };
+		1FFE6AD9259E707000776771 /* CSVReader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CSVReader.hpp; sourceTree = "<group>"; };
+		1FFE6ADA259E707000776771 /* CSVReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CSVReader.cpp; sourceTree = "<group>"; };
+		1FFE6ADE259E709000776771 /* PNGReader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PNGReader.hpp; sourceTree = "<group>"; };
+		1FFE6ADF259E709000776771 /* PNGReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PNGReader.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +107,7 @@
 		1F18FFCE257ECABF00BBA6D2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				1FFE6AD3259E6FDE00776771 /* io */,
 				1F18FFD3257ECAEE00BBA6D2 /* buddhabrot.cpp */,
 				1F18FFD0257ECAEE00BBA6D2 /* Cell.cpp */,
 				1F18FFCF257ECAEE00BBA6D2 /* Cell.hpp */,
@@ -111,6 +118,17 @@
 				1F96F726259AD527008320A5 /* KernelHelper.hpp */,
 			);
 			path = src;
+			sourceTree = "<group>";
+		};
+		1FFE6AD3259E6FDE00776771 /* io */ = {
+			isa = PBXGroup;
+			children = (
+				1FFE6AD9259E707000776771 /* CSVReader.hpp */,
+				1FFE6ADA259E707000776771 /* CSVReader.cpp */,
+				1FFE6ADE259E709000776771 /* PNGReader.hpp */,
+				1FFE6ADF259E709000776771 /* PNGReader.cpp */,
+			);
+			path = io;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -169,8 +187,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1FFE6AE0259E709000776771 /* PNGReader.cpp in Sources */,
 				1F96F728259AD842008320A5 /* KernelHelper.cpp in Sources */,
 				1F18FFD6257ECAEE00BBA6D2 /* buddhabrot.cpp in Sources */,
+				1FFE6ADB259E707000776771 /* CSVReader.cpp in Sources */,
 				1F18FFD4257ECAEE00BBA6D2 /* Cell.cpp in Sources */,
 				1F18FFD5257ECAEE00BBA6D2 /* ComplexNumber.cpp in Sources */,
 			);

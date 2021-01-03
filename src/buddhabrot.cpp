@@ -9,6 +9,8 @@
 
 #include "Cell.hpp"
 #include "KernelHelper.hpp"
+#include "io/PNGReader.hpp"
+#include "io/CSVReader.hpp"
 
 #ifdef __APPLE__
     #define GL_SILENCE_DEPRECATION
@@ -19,8 +21,6 @@
     #include <GL/gl.h>
     #include <GL/glut.h>
 #endif
-
-#include <png.h>
 
 #include <getopt.h>
 #include <iostream>
@@ -129,6 +129,7 @@ int main(int argc, char *argv[]) {
     }
     
     // print what buddhabrot will be generated
+    std::string saveLoc = save ? FILE_NAME.c_str() : "N/A";
     std::cout << std::endl << "Generating " + std::string(anti ? "anti-" : "") + "buddhabrot with arguments :" << std::endl;
     printf("\tpixels size\t\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size\t\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
     printf("\tgenerate with GPU\t %s\n", useGpu ? "true" : "false");
     printf("\tthreads\t\t\t %s\n", useGpu ? "N/A" : std::to_string(NUM_THREADS).c_str());
     printf("\tcolour\t\t\t (%d, %d, %d)\n", COLOUR_R, COLOUR_G, COLOUR_B);
-    printf("\tsave to\t\t\t %s\n", save ? std::string(FILE_NAME + ".png").c_str() : "N/A");
+    printf("\tsave to\t\t\t %s.png and %s.csv\n", saveLoc.c_str(), saveLoc.c_str());
     printf("\tpng with alpha\t\t %s\n", save ? alpha ? "true" : "false" : "N/A");
     
     std::cout << std::endl;
@@ -198,84 +199,16 @@ int main(int argc, char *argv[]) {
         
         glutMainLoop();
     } else {
-        FILE *fp = fopen(std::string(FILE_NAME + ".png").c_str(), "wb");
-        png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-        png_infop info_ptr = png_create_info_struct(png_ptr);
-        png_init_io(png_ptr, fp);
-
-        // write header
-        png_set_IHDR(png_ptr, info_ptr, WINDOW_WIDTH, WINDOW_WIDTH,
-            8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
-            PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-        png_write_info(png_ptr, info_ptr);
-
-        // write bytes
-        png_bytep *row_pointers;
-        row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * WINDOW_WIDTH);
-        for (unsigned int i = 0; i < WINDOW_WIDTH; ++i) {
-            row_pointers[i] = (png_byte*) malloc( sizeof(png_byte) * WINDOW_WIDTH * 4);
-
-            png_bytep rpptr = row_pointers[i];
-            for (unsigned int j = 0; j < WINDOW_WIDTH; ++j) {
-                long double percentageOfMax;
-                if (useGpu)
-                    percentageOfMax = log(g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]) / log(g_maxCount);
-                else
-                    percentageOfMax = log(g_cellsClass[i][j]->counter) / log(g_maxCount);
-                
-                if (percentageOfMax <= 0.25) {
-                    // RGB
-                    *rpptr = 0;
-                    rpptr++;
-                    *rpptr = 0;
-                    rpptr++;
-                    *rpptr = 0;
-                    rpptr++;
-                    
-                    // Alpha
-                    *rpptr = 255;
-                    rpptr++;
-                } else {
-                    // rendering using brightness to determin alpha value but due to viewing videos,
-                    // may appear weirdly washed out so for more consistent results, change rgb
-                    // values and a set alpha by default
-                    if (alpha) {
-                        // RGB
-                        *rpptr = COLOUR_R;
-                        rpptr++;
-                        *rpptr = COLOUR_G;
-                        rpptr++;
-                        *rpptr = COLOUR_B;
-                        rpptr++;
-
-                        // Alpha
-                        *rpptr = (unsigned char)(percentageOfMax * 255.0f);
-                        rpptr++;
-                        
-                    } else {
-                        // RGB
-                        *rpptr = (unsigned char)(COLOUR_R * percentageOfMax);
-                        rpptr++;
-                        *rpptr = (unsigned char)(COLOUR_G * percentageOfMax);
-                        rpptr++;
-                        *rpptr = (unsigned char)(COLOUR_B * percentageOfMax);
-                        rpptr++;
-                        
-                        // Alpha
-                        *rpptr = 255;
-                        rpptr++;
-                    }
-                }
-            }
-        }
-    
-        png_write_image(png_ptr, row_pointers);
-        png_write_end(png_ptr, NULL);
-
-        fclose(fp);
+        PNGReader picture((char*)(FILE_NAME + ".png").c_str(), WINDOW_WIDTH, CELLS_PER_ROW, COLOUR_R, COLOUR_G, COLOUR_B, g_maxCount, alpha);
+        CSVReader csv((char*)(FILE_NAME + ".csv").c_str(), WINDOW_WIDTH);
         
-        std::cout << "Saved fractal to " << FILE_NAME << ".png" << std::endl;
+        if (useGpu) {
+            picture.write(g_cellsGPU);
+            csv.write(g_cellsGPU);
+        } else {
+            picture.write(&g_cellsClass);
+            csv.write(&g_cellsClass);
+        }
     }
 
 	return 0;
@@ -332,9 +265,11 @@ static void executeRowsEscapes(unsigned int threadId, unsigned int threadsTotal)
     for (unsigned int i = 0; i < groups; ++i) {
         unsigned int currentColumn = i * threadsTotal + threadId;
         
-        std::vector<Cell*> h = g_cellsClass[currentColumn];
-        for (Cell *cell : h)
-            Cell::escape(&cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti);
+        if (CELLS_PER_ROW > currentColumn) {
+            std::vector<Cell*> h = g_cellsClass[currentColumn];
+            for (Cell *cell : h)
+                Cell::escape(&cell->complex, &g_cellsClass, &MIN, ITERATIONS, CELLS_PER_ROW, &g_maxCount, anti);
+        }
     }
     
     if (CELLS_PER_ROW > groups * threadsTotal + threadId) {
