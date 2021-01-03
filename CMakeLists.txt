@@ -24,9 +24,9 @@ if (USE_OPENGL)
 	find_package(GLUT REQUIRED)
 	message(STATUS "GLUT_FOUND := TRUE")
 
-	add_compile_options( -D USE_OPENGL=true )
+	add_compile_options( -DUSE_OPENGL=true )
 else ()
-	add_compile_options( -D USE_OPENGL=false )
+	add_compile_options( -DUSE_OPENGL=false )
 endif (USE_OPENGL)
 
 # Find OpenCL
@@ -34,9 +34,9 @@ find_package(OpenCL 1.2 REQUIRED)
 message(STATUS "OPENCL_FOUND := TRUE")
 
 if (OPENCL_DOUBLE_PRECISION)
-	add_compile_options( -D DOUBLE_SUPPORT_AVAILABLE=true )
+	add_compile_options( -DDOUBLE_SUPPORT_AVAILABLE=true )
 else ()
-	add_compile_options( -D DOUBLE_SUPPORT_AVAILABLE=false )
+	add_compile_options( -DDOUBLE_SUPPORT_AVAILABLE=false )
 endif (OPENCL_DOUBLE_PRECISION)
 
 # Find libpng using PkgConfig
