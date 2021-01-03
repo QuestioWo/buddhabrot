@@ -18,11 +18,9 @@
 #if defined(DOUBLE_SUPPORT_AVAILABLE)
     // double
     typedef double Real;
-
 #else
     // float
     typedef float Real;
-
 #endif
 
 kernel void escape(global Real *cells, const Real minx, const Real miny, const Real cellRealWidth, const unsigned int iterationsCurrent, volatile global Real *interimResults, volatile global unsigned int *counts) {

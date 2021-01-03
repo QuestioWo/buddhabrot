@@ -14,8 +14,6 @@
 
 #if USE_OPENGL
     #ifdef __APPLE__
-        #define GL_SILENCE_DEPRECATION
-        #define GLUT_SILENCE_DEPRECATION
         #include <OpenGL/gl.h>
         #include <GLUT/glut.h>
     #else

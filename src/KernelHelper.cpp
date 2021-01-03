@@ -47,15 +47,15 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     // 1000-500 maximum for 6001
     // ~5500 maximum for 2001
     // >7500 maximum for 501
-    
-    cl_int err;
 
+    cl_platform_id platformId;
+    cl_device_id deviceId;
     cl_context context;
     cl_command_queue commands;
     cl_kernel kernel;
     cl_program program;
-    cl_platform_id platformId;
-    cl_device_id deviceId;
+    
+    cl_int err;
 
     (*g_cellsGPU) = new Real[count * 3];
     Real *interimResults = new Real[inputCount];
@@ -76,18 +76,18 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
             interimResults[i * cellsPerRow * 2 + j * 2 + 1] = realy;
         }
     }
-
+    
     cl_uint numPlatforms;
     err = clGetPlatformIDs(1, &platformId, &numPlatforms);
     if (err != CL_SUCCESS) {
         std::cout << "Failed to find an OpenCL platform. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
-    
+
     err = clGetDeviceIDs(platformId, CL_DEVICE_TYPE_GPU, 1, &deviceId, NULL);
     if (err != CL_SUCCESS) {
         std::cout << "GPU device not found. Check install or use without -o option" << std::endl;
-        std::cout << "Defaulting to trying CPU" << std::endl;
+        exit(1);
     }
 
     context = clCreateContext(0, 1, &deviceId, NULL, NULL, &err);
@@ -124,7 +124,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
         size_t len;
-        char buffer[8184];
+        char buffer[8192];
 
         std::cout << "Failed to build program executable. Check OpenCL install or use without -o option" << std::endl;
         clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, sizeof(char) * 8184, buffer, &len);
@@ -163,6 +163,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     clReleaseKernel(kernel);
     clReleaseCommandQueue(commands);
     clReleaseContext(context);
+    clReleaseDevice(deviceId);
     
     delete[] interimResults;
 }
