@@ -44,7 +44,7 @@ void Cell::escape(ComplexNumber *c, std::vector<std::vector<Cell*>> *cells, cons
 		int visitedx = floor((z.real - realMin->first) / cells->at(0)[0]->width);
 		int visitedy = floor((z.imag - realMin->second) / cells->at(0)[0]->width);
 
-        if (visitedx < (cellsPerRow - 1) && visitedy < (cellsPerRow - 1) && visitedx >= 0 && visitedy >= 0 && i != 0)
+        if (visitedx <= (cellsPerRow - 1) && visitedy <= (cellsPerRow - 1) && visitedx >= 0 && visitedy >= 0 && i != 0)
 			visited.push_back(cells->at(visitedx)[visitedy]);
         else if (i != 0)
 			break;
