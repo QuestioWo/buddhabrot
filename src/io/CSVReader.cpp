@@ -38,8 +38,7 @@ Real *CSVReader::read() {
     
     std::getline(file, line, '\n'); // remove headings
     
-    while (count < cellsPerRow * cellsPerRow) {
-        std::getline(file, line, '\n');
+    while (count < cellsPerRow * cellsPerRow && std::getline(file, line, '\n')) {
         std::stringstream lineStream(line);
         
         unsigned int x = count / cellsPerRow;
