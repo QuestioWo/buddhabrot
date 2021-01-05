@@ -51,9 +51,11 @@ static unsigned char COLOUR_G = 0;
 static unsigned char COLOUR_B = 255;
 static bool anti = false;
 static bool save = false;
+static bool load = false;
 static bool alpha = false;
 static bool useGpu = false;
-static std::string FILE_NAME;
+static std::string SAVE_FILE_NAME;
+static std::string LOAD_FILE_NAME;
 
 static std::vector<std::vector<Cell*>> g_cellsClass = {};
 static Real *g_cellsGPU;
@@ -69,7 +71,7 @@ int main(int argc, char *argv[]) {
     std::string tmp;
     std::stringstream lineStream;
 
-    while((option = getopt(argc, argv, ":ao4s:w:p:i:c:t:")) != -1) {
+    while((option = getopt(argc, argv, ":ao4s:l:w:p:i:c:t:")) != -1) {
         switch(option) {
             case 'a' :
                 anti = true;
@@ -77,7 +79,13 @@ int main(int argc, char *argv[]) {
                 
             case 's' :
                 save = true;
-                FILE_NAME = std::string(optarg);
+                SAVE_FILE_NAME = std::string(optarg);
+                break;
+                
+            case 'l' :
+                load = true;
+                LOAD_FILE_NAME = std::string(optarg);
+                useGpu = true;
                 break;
             
             case '4' :
@@ -134,8 +142,8 @@ int main(int argc, char *argv[]) {
     }
     
     // print what buddhabrot will be generated
-    std::string saveLoc = save ? FILE_NAME.c_str() : "N/A";
-    std::cout << std::endl << "Generating " + std::string(anti ? "anti-" : "") + "buddhabrot with arguments :" << std::endl;
+    std::string saveLoc = save ? SAVE_FILE_NAME.c_str() : "N/A";
+    std::cout << std::endl << std::string(load ? "Loading " : "Generating ") + std::string(anti ? "anti-" : "") + "buddhabrot with arguments :" << std::endl;
     printf("\tpixels size\t\t %d x %d\n", CELLS_PER_ROW, CELLS_PER_ROW);
     printf("\twindow size\t\t %d x %d\n", WINDOW_WIDTH, WINDOW_WIDTH);
     printf("\titerations\t\t %d\n", ITERATIONS);
@@ -150,42 +158,55 @@ int main(int argc, char *argv[]) {
     // calculate buddhabrot
     long double cellImageWidth = (GL_CANVAS_MAX_X - GL_CANVAS_MIN_X) / double(CELLS_PER_ROW);
 	long double cellRealWidth = REAL_DIFF / CELLS_PER_ROW;
-
-    if (useGpu)
-        calculateCells(&g_cellsGPU, &g_maxCount, &ITERATIONS, &CELLS_PER_ROW, &MIN, &cellRealWidth, &anti);
-    else {
-        std::vector<Cell*> holding;
-
+    
+    if (load) {
+        CSVReader csv((char*)LOAD_FILE_NAME.c_str(), CELLS_PER_ROW);
+        g_cellsGPU = csv.read();
+        
         for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
-            holding.clear();
-            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
-                long double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
-                long double realy = MIN.second + cellRealWidth * j;
-                holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &MIN, &IMAGE_MIN));
+            for (unsigned int j = 0; j < CELLS_PER_ROW; ++j)
+                g_maxCount = std::max(g_maxCount, (unsigned int)g_cellsGPU[i * CELLS_PER_ROW * 3 + j * 3 + 2]);
+        }
+        
+        std::cout << "Loaded fractal" << std::endl;
+    } else {
+        if (useGpu)
+            calculateCells(&g_cellsGPU, &g_maxCount, &ITERATIONS, &CELLS_PER_ROW, &MIN, &cellRealWidth, &anti);
+        else {
+            std::vector<Cell*> holding;
+
+            for (unsigned int i = 0; i < CELLS_PER_ROW; ++i) {
+                holding.clear();
+                for (unsigned int j = 0; j < CELLS_PER_ROW; ++j) {
+                    long double realx = MIN.first + cellRealWidth * (CELLS_PER_ROW - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
+                    long double realy = MIN.second + cellRealWidth * j;
+                    holding.push_back(new Cell(realx, realy, cellRealWidth, cellImageWidth, &MIN, &IMAGE_MIN));
+                }
+
+                g_cellsClass.push_back(holding);
             }
+            
+            g_cellsClass.shrink_to_fit();
 
-            g_cellsClass.push_back(holding);
+            std::cout << "Memory successfully yoinked" << std::endl;
+            
+            std::vector<std::thread*> threads;
+            
+            for (unsigned int i = 0; i < (NUM_THREADS - 1); ++i)
+                threads.push_back(new std::thread(executeRowsEscapes, i, NUM_THREADS));
+            
+            executeRowsEscapes(NUM_THREADS, NUM_THREADS);
+
+            for (unsigned int i = 0; i < threads.size(); ++i) {
+                threads[i]->join();
+                delete threads[i];
+                threads.erase(threads.begin() + i);
+            }
         }
         
-        g_cellsClass.shrink_to_fit();
-
-        std::cout << "Memory successfully yoinked" << std::endl;
-        
-        std::vector<std::thread*> threads;
-        
-        for (unsigned int i = 0; i < (NUM_THREADS - 1); ++i)
-            threads.push_back(new std::thread(executeRowsEscapes, i, NUM_THREADS));
-        
-        executeRowsEscapes(NUM_THREADS, NUM_THREADS);
-
-        for (unsigned int i = 0; i < threads.size(); ++i) {
-            threads[i]->join();
-            delete threads[i];
-            threads.erase(threads.begin() + i);
-        }
+        std::cout << "Calculated fractal" << std::endl;
     }
     
-    std::cout << "Calculated fractal" << std::endl;
     std::cout << "Max count := " << g_maxCount << std::endl;
     
     // display buddhabrot
@@ -204,8 +225,8 @@ int main(int argc, char *argv[]) {
         
         glutMainLoop();
     } else {
-        PNGReader picture((char*)(FILE_NAME + ".png").c_str(), WINDOW_WIDTH, CELLS_PER_ROW, COLOUR_R, COLOUR_G, COLOUR_B, g_maxCount, alpha);
-        CSVReader csv((char*)(FILE_NAME + ".csv").c_str(), WINDOW_WIDTH);
+        PNGReader picture((char*)(SAVE_FILE_NAME + ".png").c_str(), WINDOW_WIDTH, CELLS_PER_ROW, COLOUR_R, COLOUR_G, COLOUR_B, g_maxCount, alpha);
+        CSVReader csv((char*)(SAVE_FILE_NAME + ".csv").c_str(), CELLS_PER_ROW);
         
         if (useGpu) {
             picture.write(g_cellsGPU);
@@ -250,16 +271,17 @@ static void displayCallback() {
 static void showUsage(std::string name) {
     std::cerr << "Usage: " << name << " <option(s)>\n"
         << "Options:\n"
-        << "\t-h \t\t\t Show this help message\n"
-        << "\t-a \t\t\t Generate an anti-buddhabrot \t\t\t\t\t\t\t defaults to false\n"
-        << "\t-o \t\t\t Calculate the buddhabrot using OpenCL, i.e using GPU \t\t\t\t defaults to false\n"
-        << "\t-4 \t\t\t Generate png with alpha based-brightness; viewer dependant \t\t\t defaults to false\n"
-        << "\t-s FILE_NAME\t\t Saves buddhabrot as a png and csv to the specified (FILE_NAME + '.png'/'.csv')  defaults to not save\n"
-        << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t\t\t defaults to 501\n"
-        << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t\t\t defaults to WINDOW_WIDTH\n"
-        << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point \t\t defaults to 500\n"
-        << "\t-c COLOUR_TUPLE \t Specify the render's colour \t\t\t\t\t\t\t defaults to 0,0,255\n"
-        << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals \t\t defaults to the number of findable threads or 4\n"
+        << "\t-h\n\t\t Show this help message\n\n"
+        << "\t-a\n\t\t Generate an anti-buddhabrot\n\t\t defaults to false\n\n"
+        << "\t-o\n\t\t Calculate the buddhabrot using OpenCL, i.e using GPU\n\t\t defaults to false\n\n"
+        << "\t-4\n\t\t Generate png with alpha based-brightness; viewer dependant\n\t\t defaults to false\n\n"
+        << "\t-s FILE_NAME\n\t\t Saves buddhabrot as a png and csv to the specified (SAVE_FILE_NAME + '.png'/'.csv')\n\t\t defaults to not save\n\n"
+        << "\t-l FILE_NAME\n\t\t Loads buddhabrot from specified plaintext file. If correct -p not known, lines in sqrt(FILE_NAME - 1)\n\t\t defaults to not load\n\n"
+        << "\t-w WINDOW_WIDTH\n\t\t Specify the width of the window\n\t\t defaults to 501\n\n"
+        << "\t-p CELLS_PER_ROW\n\t\t Specify the number of 'boxes' per row\n\t\t defaults to WINDOW_WIDTH\n\n"
+        << "\t-i ITERATIONS\n\t\t Specify the number of iterations to be performed on each point\n\t\t defaults to 500\n\n"
+        << "\t-c COLOUR_R,COLOUR_G,COLOUR_B\n\t\t Specify the render's colour\n\t\t defaults to 0,0,255\n\n"
+        << "\t-t NUM_THREADS\n\t\t Specify the number of threads to be used to compute the fractals\n\t\t defaults to the number of findable threads or 4\n"
         << std::endl;
 }
 
