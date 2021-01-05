@@ -25,6 +25,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <math.h>
+#include <sstream>
 #include <thread>
 #include <vector>
 
@@ -65,7 +66,10 @@ int main(int argc, char *argv[]) {
         showUsage(argv[0]);
     
     // put ':' at the starting of the string so compiler can distinguish between '?' and ':'
-    while((option = getopt(argc, argv, ":ao4s:w:p:i:r:g:b:t:")) != -1) {
+    std::string tmp;
+    std::stringstream lineStream;
+
+    while((option = getopt(argc, argv, ":ao4s:w:p:i:c:t:")) != -1) {
         switch(option) {
             case 'a' :
                 anti = true;
@@ -97,16 +101,17 @@ int main(int argc, char *argv[]) {
                 ITERATIONS = std::stoi(optarg);
                 break;
                 
-            case 'r' :
-                COLOUR_R = (unsigned char)std::stoi(optarg);
-                break;
+            case 'c' :
+                lineStream = std::stringstream(std::string(optarg));
                 
-            case 'g' :
-                COLOUR_G = (unsigned char)std::stoi(optarg);
-                break;
+                std::getline(lineStream, tmp, ',');
+                COLOUR_R = (unsigned char)std::stoi(tmp);
                 
-            case 'b' :
-                COLOUR_B = (unsigned char)std::stoi(optarg);
+                std::getline(lineStream, tmp, ',');
+                COLOUR_G = (unsigned char)std::stoi(tmp);
+                
+                std::getline(lineStream, tmp, ',');
+                COLOUR_B = (unsigned char)std::stoi(tmp);
                 break;
                 
             case 't' :
@@ -253,9 +258,7 @@ static void showUsage(std::string name) {
         << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t\t\t defaults to 501\n"
         << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t\t\t defaults to WINDOW_WIDTH\n"
         << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point \t\t defaults to 500\n"
-        << "\t-r COLOUR_R \t\t Specify the red component of the render's colour \t\t\t\t defaults to 0\n"
-        << "\t-g COLOUR_G \t\t Specify the green component of the render's colour \t\t\t\t defaults to 0\n"
-        << "\t-b COLOUR_B \t\t Specify the blue component of the render's colour \t\t\t\t defaults to 255\n"
+        << "\t-c COLOUR_TUPLE \t\t Specify the render's colour \t\t\t\t\t\t defaults to 0,0,255\n"
         << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals \t\t defaults to the number of findable threads or 4\n"
         << std::endl;
 }
