@@ -258,7 +258,7 @@ static void showUsage(std::string name) {
         << "\t-w WINDOW_WIDTH \t Specify the width of the window \t\t\t\t\t\t defaults to 501\n"
         << "\t-p CELLS_PER_ROW \t Specify the number of 'boxes' per row \t\t\t\t\t\t defaults to WINDOW_WIDTH\n"
         << "\t-i ITERATIONS \t\t Specify the number of iterations to be performed on each point \t\t defaults to 500\n"
-        << "\t-c COLOUR_TUPLE \t\t Specify the render's colour \t\t\t\t\t\t defaults to 0,0,255\n"
+        << "\t-c COLOUR_TUPLE \t Specify the render's colour \t\t\t\t\t\t\t defaults to 0,0,255\n"
         << "\t-t NUM_THREADS \t\t Specify the number of threads to be used to compute the fractals \t\t defaults to the number of findable threads or 4\n"
         << std::endl;
 }
