@@ -40,7 +40,7 @@ int loadTextFromFile(const char *filename, char **fileString, size_t *stringLeng
 
 void calculateCells(Real **g_cellsGPU, unsigned int *g_maxCount, unsigned int *iterations, unsigned int *cellsPerRow, const std::pair<long double, long double> *min, long double *cellRealWidth, bool *anti);
 
-void runCheckKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kernel, cl_device_id *deviceId, Real **interimResults, cl_uint **pointCorrectlyEscapes, const unsigned int *iterations);
-void runCountKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kernel, cl_device_id *deviceId, Real **interimResults, unsigned int pointsTheCorrectlyEscape, const unsigned int *iterations);
+void runCheckKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kernel, cl_device_id *deviceId, Real **originalPoints, Real **interimResults, cl_uint **pointCorrectlyEscapes, const unsigned int *iterations);
+void runCountKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kernel, cl_device_id *deviceId, Real **originalPoints, Real **interimResults, unsigned int pointsTheCorrectlyEscape, const unsigned int *iterations);
 
 #endif // KernelHelper_hpp

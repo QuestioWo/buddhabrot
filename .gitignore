@@ -10,7 +10,7 @@
 
 # Misc.
 .DS_Store
-run.*
+run*.*
 
 # Final
 !.gitignore
