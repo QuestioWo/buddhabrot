@@ -44,6 +44,14 @@ To find the maximum value, and thus the most effiecient method of grouping, an e
 
 To override the value calculated with this equation, namely to run without or with far more lax groupings, the `-m ITERATION_MAX` argument can be used when running the program
 
+### Google Colab
+
+This project also successfully build and runs on Google Colab, Google's free cloud computing service. An example of this can be found [here](https://colab.research.google.com/drive/115ahIAOolEPCJVfblQucRkm0ZtZ7ylWr?usp=sharing) and its results can be found [here](https://drive.google.com/drive/folders/1q31810a88D1tNCGpoFf338rNu6K4gIFS?usp=sharing)
+
+## Gallery
+
+A collection of results of the program that were not quite buddhabrots, but still interesting can be found [here](https://drive.google.com/drive/folders/1y0yev1y6pWNXeVT7l7yXxJzKpcF0Bow-?usp=sharing)
+
 ## Author
 
 This buddhabrot rendering program has been and is being written by [Jim Carty](https://questiowo.github.io). Email: cartyjim1@gmail.com
