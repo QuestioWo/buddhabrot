@@ -8,7 +8,6 @@
 //===========================================================================//
 
 #include "KernelHelper.hpp"
-#include "io/CSVReader.hpp"
 
 #include <iostream>
 #include <math.h>
