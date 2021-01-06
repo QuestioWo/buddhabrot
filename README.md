@@ -19,7 +19,7 @@ The command that can be used for getting this result is `./build/buddhabrot -o -
 * libpng
 * OpenCL
 
-### Building & Usgae
+### Building & Usage
 
 ```bash
 git clone https://github.com/QuestioWo/buddhabrot.git
@@ -33,6 +33,16 @@ cd ../
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. Examples of the program running can be found above
 
 Exiting the program can be done by pressing `Ctrl + C` in the same terminal window
+
+### Iteration Groups
+
+For running with the `-o` argument, on the GPU, to avoid the GPU hanging, the program runs groups of iterations across all the cells. This is because with larger numbers of pixels and iterations, the computation time to run all iterations maybe too great to not hang the GPU
+
+To find the maximum value, and thus the most effiecient method of grouping, an equation is employed that was calculated from maximum values obtained from experimentation
+
+![Graph of maximum values](https://github.com/QuestioWo/buddhabrot/blob/main/assets/batch_calculation.png?raw=true)
+
+To override the value calculated with this equation, namely to run without or with far more lax groupings, the `-m ITERATION_MAX` argument can be used when running the program
 
 ## Author
 
