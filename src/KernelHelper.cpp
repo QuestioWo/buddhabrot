@@ -19,9 +19,8 @@ static Real cellRealWidth;
 static unsigned long int count;
 static unsigned long int inputCount;
 static unsigned int cellsPerRow;
-static unsigned int iterationsMax;
 
-void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *iterations, unsigned int *cellsPerRowPassed, const std::pair<long double, long double> *min, long double *cellRealWidthPassed, bool *anti) {
+void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *iterations, unsigned int *cellsPerRowPassed, const std::pair<long double, long double> *min, long double *cellRealWidthPassed, bool *anti, unsigned int *iterationsMax) {
     printf("Using %d-bit (%s) floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
     
     g_cellsGPU = cellsGPU;
@@ -31,18 +30,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     count = cellsPerRow * cellsPerRow;
     inputCount = count * 2;
     
-    // TODO: better equation to find maximum iterations per group
-    long double coeffi = -1 * floor(1.6 * cellsPerRow);
-    iterationsMax = (unsigned int)(coeffi + ITERATIONS_GPU_MAX);
-    
-    std::cout << "Iterations per group := " << iterationsMax << std::endl;
-    
-    if (*anti) {
-        if (iterationsMax / 12 != 0)
-            iterationsMax = iterationsMax / 12;
-        else
-            iterationsMax = 2;
-    }
+    std::cout << "Iterations per group := " << *iterationsMax << std::endl;
     
     // 1000-500 maximum for 6001
     // ~5500 maximum for 2001
@@ -121,7 +109,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
 
     // Build the program executable
     char compileArgs[128];
-    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D ANTI=%d -D ITERATIONS_MAX=%d", cellsPerRow, (cl_uint)*anti, iterationsMax);
+    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D ANTI=%d -D ITERATIONS_MAX=%d", cellsPerRow, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -150,13 +138,13 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     
     std::cout << "Memory successfully yoinked" << std::endl;
     
-    const unsigned int iterationGroups = *iterations / iterationsMax;
-    const unsigned int iterationFinal = *iterations - iterationsMax * iterationGroups;
-    bool extraGroup = *iterations > (iterationsMax * iterationGroups);
+    const unsigned int iterationGroups = *iterations / *iterationsMax;
+    const unsigned int iterationFinal = *iterations - *iterationsMax * iterationGroups;
+    bool extraGroup = *iterations > (*iterationsMax * iterationGroups);
     
     // check which coords have to be ran to find correct buddhabrot
     for (unsigned int i = 0; i < iterationGroups; ++i) {
-        runCheckKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, &iterationsMax);
+        runCheckKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, &*iterationsMax);
         
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
@@ -204,7 +192,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     
     // use correctly escaping points to find all correctly visited points
     for (unsigned int i = 0; i < iterationGroups; ++i) {
-        runCountKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, pointsThatCorrectlyEscape, &iterationsMax);
+        runCountKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, pointsThatCorrectlyEscape, &*iterationsMax);
         
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
