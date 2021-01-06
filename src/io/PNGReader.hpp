@@ -12,24 +12,12 @@
 #ifndef PNGReader_hpp
 #define PNGReader_hpp
 
-#if defined(cl_khr_fp64)
-    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#elif defined(cl_amd_fp64)
-    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
-    #define DOUBLE_SUPPORT_AVAILABLE
-#endif
-
-#if defined(DOUBLE_SUPPORT_AVAILABLE)
+#if DOUBLE_SUPPORT_AVAILABLE
     // double
     typedef double Real;
-    #define PRECISION (64)
-
 #else
     // float
     typedef float Real;
-    #define PRECISION (32)
-
 #endif
 
 class PNGReader {

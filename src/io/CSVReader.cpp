@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <math.h>
 #include <sstream>
 #include <string>
 
@@ -100,7 +101,6 @@ int CSVReader::write(Real *fileData) {
     if (!stream)
         return 1;
     
-//    stream << "pixel_real,pixel_imag,counter" << std::endl;
     std::string resultString = "pixel_real,pixel_imag,counter\n";
     
     for (unsigned int i = 0; i < cellsPerRow; ++i) {

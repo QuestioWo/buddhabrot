@@ -329,6 +329,11 @@
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DDOUBLE_SUPPORT_AVAILABLE=false",
+					"-DUSE_OPENGL=true",
+				);
 				OTHER_LDFLAGS = (
 					"-lz",
 					"-lpng16",
@@ -349,6 +354,11 @@
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DDOUBLE_SUPPORT_AVAILABLE=false",
+					"-DUSE_OPENGL=true",
+				);
 				OTHER_LDFLAGS = (
 					"-lz",
 					"-lpng16",
