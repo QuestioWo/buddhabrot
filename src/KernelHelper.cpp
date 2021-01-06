@@ -30,6 +30,12 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     count = cellsPerRow * cellsPerRow;
     inputCount = count * 2;
     
+    if (*iterationsMax == 0)
+        *iterationsMax = 3.28E11 * pow(cellsPerRow, -2.06);
+    
+    if (*anti)
+        *iterationsMax = ceil(*iterationsMax / 8);
+    
     std::cout << "Iterations per group := " << *iterationsMax << std::endl;
     
     // 1000-500 maximum for 6001

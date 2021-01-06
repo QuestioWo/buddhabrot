@@ -45,7 +45,7 @@ static void showUsage(std::string name);
 static void executeRowsEscapes(unsigned int threadId, unsigned int threadsTotal);
 
 static unsigned int iterations = 500;
-static unsigned int iterationsMax = 500;
+static unsigned int iterationsMax = 0;
 static unsigned int windowWidth = 501;
 static unsigned int cellsPerRow = windowWidth;
 static unsigned char numThreads = std::thread::hardware_concurrency() != 0 ? std::thread::hardware_concurrency() : 4;
@@ -116,7 +116,6 @@ int main(int argc, char *argv[]) {
                 
             case 'i' :
                 iterations = std::stoi(optarg);
-                iterationsMax = iterations;
                 break;
             
             case 'm' :
@@ -304,7 +303,7 @@ static void showUsage(std::string name) {
         << "\t-w WINDOW_WIDTH\n\t\t Specify the width of the window\n\t\t defaults to 501\n\n"
         << "\t-p CELLS_PER_ROW\n\t\t Specify the number of 'boxes' per row\n\t\t defaults to WINDOW_WIDTH\n\n"
         << "\t-i ITERATIONS\n\t\t Specify the number of iterations to be performed on each point\n\t\t defaults to 500\n\n"
-        << "\t-m ITERATIONS_MAX\n\t\t Specify the number of iterations per group to be ran by the\n\t\t GPU. Important as prevents hanging GPU for larger ITERATIONS\n\t\t values. CELLS_PER_ROW is the largest influence of how large the\n\t\t ITERATION_MAX value can be. e.g 2001 can run at around 50000\n\t\t per group and 4501 at around 10000\n\t\t defaults to ITERATIONS\n\n"
+        << "\t-m ITERATIONS_MAX\n\t\t Specify the number of iterations per group to be ran by the\n\t\t GPU. Important as prevents hanging GPU for larger ITERATIONS\n\t\t values. CELLS_PER_ROW is the largest influence of how large the\n\t\t ITERATION_MAX value can be. e.g 2001 can run at around 50000\n\t\t per group and 4501 at around 10000\n\t\t defaults to use estimation for maximum\n\n"
         << "\t-c COLOUR_R,COLOUR_G,COLOUR_B\n\t\t Specify the render's colour\n\t\t defaults to 0,0,255\n\n"
         << "\t-t NUM_THREADS\n\t\t Specify the number of threads to be used to compute the fractal\n\t\t defaults to the number of findable threads or 4\n"
         << std::endl;
