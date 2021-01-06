@@ -35,8 +35,9 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     // TODO: better equation to find maximum iterations per group
     long double coeffi = -1 * floor(1.6 * cellsPerRow);
     iterationsMax = (unsigned int)(coeffi + ITERATIONS_GPU_MAX);
+    
     iterationsMax = 250;
-    iterationsMax = 100000;
+    iterationsMax = *iterations;
     
     std::cout << "Iterations per group := " << iterationsMax << std::endl;
     
@@ -62,7 +63,6 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     cl_int err;
 
     (*g_cellsGPU) = new Real[count * 3];
-    Real *second_cells = new Real[count * 3];
     Real *originalCells = new Real[inputCount];
     Real *interimResultsCheck = new Real[inputCount]();
 
@@ -162,17 +162,6 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     for (unsigned int i = 0; i < iterationGroups; ++i) {
         runCheckKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, &iterationsMax);
         
-        for (unsigned int i = 0; i < cellsPerRow; ++i) {
-            for (unsigned int j = 0; j < cellsPerRow; ++j) {
-                second_cells[i * cellsPerRow * 3 + j * 3 + 0] = interimResultsCheck[i * cellsPerRow * 2 + j * 2 + 0];
-                second_cells[i * cellsPerRow * 3 + j * 3 + 1] = interimResultsCheck[i * cellsPerRow * 2 + j * 2 + 1];
-                second_cells[i * cellsPerRow * 3 + j * 3 + 2] = pointCorrectlyEscapes[i * cellsPerRow + j];
-            }
-        }
-
-        CSVReader csv = CSVReader((char *)std::string("run2-" + std::to_string(i) + ".csv").c_str(), cellsPerRow);
-        csv.write(second_cells);
-        
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
     
@@ -183,6 +172,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     }
     
     clReleaseKernel(kernelCheck);
+    
     delete[] interimResultsCheck;
     delete[] originalCells;
     

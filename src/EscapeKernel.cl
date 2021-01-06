@@ -39,7 +39,13 @@ kernel void check(global Real *originalCells, global Real *currentCells, const R
         private int oneLess = CELLS_PER_ROW - 1;
     
         for (private unsigned int i = 0; i < iterationsCurrent; ++i) {
-            if (!isinf(zreal) && !isinf(zimag) && zreal != 0 && zimag != 0 && i != 0) {
+            if (!isinf(zreal) && !isinf(zimag) && zreal != 0 && zimag != 0) {
+                private int visitedx = floor((zreal - minx) / cellRealWidth);
+                private int visitedy = floor((zimag - miny) / cellRealWidth);
+                
+                if (visitedx > oneLess || visitedy > oneLess || visitedx < 0 || visitedy < 0)
+                    break;
+                
                 // z = z^2 + c
                 private Real oldReal = zreal;
                 zreal = zreal * zreal - zimag * zimag;
@@ -48,12 +54,6 @@ kernel void check(global Real *originalCells, global Real *currentCells, const R
                 zreal = zreal + creal;
                 zimag = zimag + cimag;
                 // advance ^^^^
-                
-                private int visitedx = floor((zreal - minx) / cellRealWidth);
-                private int visitedy = floor((zimag - miny) / cellRealWidth);
-                
-                if ((visitedx > oneLess || visitedy > oneLess || visitedx < 0 || visitedy < 0) && i != 0)
-                    break;
             } else if (i == 0 && zreal == 0 && zimag == 0) {
                 // only runs on first group of iterations
                 private Real oldReal = zreal;
