@@ -40,6 +40,7 @@ kernel void check(global Real *originalCells, global Real *currentCells, const R
     
         for (private unsigned int i = 0; i < iterationsCurrent; ++i) {
             if (!isinf(zreal) && !isinf(zimag) && zreal != 0 && zimag != 0) {
+                // if a cell is invalid then it may be passed from the previous group and added updated by the advance section of the loop before the loop is broken. This means that the check for validity has to occur before the advancing of the complex number in order to have valid results and counts
                 private int visitedx = floor((zreal - minx) / cellRealWidth);
                 private int visitedy = floor((zimag - miny) / cellRealWidth);
                 
@@ -93,6 +94,15 @@ kernel void escape(global Real *originalCells, global Real *currentCells, const 
     
         for (private unsigned int i = 0; i < iterationsCurrent; ++i) {
             if (!isinf(zreal) && !isinf(zimag) && zreal != 0 && zimag != 0) {
+                // if a cell is invalid then it may be passed from the previous group and added updated by the advance section of the loop before the loop is broken. This means that the check for validity has to occur before the advancing of the complex number, and the incrementing requires the result from the previous iteration
+                private int visitedx = floor((zreal - minx) / cellRealWidth);
+                private int visitedy = floor((zimag - miny) / cellRealWidth);
+                
+                if (visitedx > oneLess || visitedy > oneLess || visitedx < 0 || visitedy < 0)
+                    break;
+                
+                atomic_inc(&counts[visitedx * CELLS_PER_ROW + visitedy]);
+                
                 // z = z^2 + c
                 private Real oldReal = zreal;
                 zreal = zreal * zreal - zimag * zimag;
@@ -101,14 +111,6 @@ kernel void escape(global Real *originalCells, global Real *currentCells, const 
                 zreal = zreal + creal;
                 zimag = zimag + cimag;
                 // advance ^^^^
-                
-                private int visitedx = floor((zreal - minx) / cellRealWidth);
-                private int visitedy = floor((zimag - miny) / cellRealWidth);
-                
-                if (visitedx <= oneLess && visitedy <= oneLess && visitedx >= 0 && visitedy >= 0 && i != 0) {
-                    atomic_inc(&counts[visitedx * CELLS_PER_ROW + visitedy]);
-                } else if (i != 0)
-                    break;
             } else if (i == 0 && zreal == 0 && zimag == 0) {
                 // only runs on first group of iterations
                 private Real oldReal = zreal;

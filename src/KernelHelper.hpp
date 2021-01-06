@@ -34,7 +34,7 @@
 static const char *KERNEL_FILENAME = "src/EscapeKernel.cl";
 static const char *KERNEL_CHECK_FUNCTION_NAME = "check";
 static const char *KERNEL_COUNT_FUNCTION_NAME = "escape";
-static const unsigned int ITERATIONS_GPU_MAX = 7500;
+static const unsigned int ITERATIONS_GPU_MAX = 50000;
 
 int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength);
 

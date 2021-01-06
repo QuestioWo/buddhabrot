@@ -36,9 +36,6 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     long double coeffi = -1 * floor(1.6 * cellsPerRow);
     iterationsMax = (unsigned int)(coeffi + ITERATIONS_GPU_MAX);
     
-    iterationsMax = 250;
-    iterationsMax = *iterations;
-    
     std::cout << "Iterations per group := " << iterationsMax << std::endl;
     
     if (*anti) {
@@ -172,7 +169,6 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     }
     
     clReleaseKernel(kernelCheck);
-    
     delete[] interimResultsCheck;
     delete[] originalCells;
     
