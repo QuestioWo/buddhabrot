@@ -150,7 +150,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     
     // check which coords have to be ran to find correct buddhabrot
     for (unsigned int i = 0; i < iterationGroups; ++i) {
-        runCheckKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, &*iterationsMax);
+        runCheckKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, iterationsMax);
         
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
@@ -198,7 +198,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     
     // use correctly escaping points to find all correctly visited points
     for (unsigned int i = 0; i < iterationGroups; ++i) {
-        runCountKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, pointsThatCorrectlyEscape, &*iterationsMax);
+        runCountKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, pointsThatCorrectlyEscape, iterationsMax);
         
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
