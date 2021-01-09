@@ -46,7 +46,7 @@ To override the value calculated with this equation, namely to run without or wi
 
 ### Google Colab
 
-This project also successfully build and runs on Google Colab, Google's free cloud computing service. An example of this can be found [here](https://colab.research.google.com/drive/115ahIAOolEPCJVfblQucRkm0ZtZ7ylWr?usp=sharing) and its results can be found [here](https://drive.google.com/drive/folders/1q31810a88D1tNCGpoFf338rNu6K4gIFS?usp=sharing)
+This project also successfully build and runs on Google Colab, Google's free cloud computing service. An example of this can be found [here](https://colab.research.google.com/drive/1cejpU7ADF30m_PSY2Mdh1M0MBTgHYzyT?usp=sharing) and its results can be found [here](https://drive.google.com/drive/folders/1q31810a88D1tNCGpoFf338rNu6K4gIFS?usp=sharing)
 
 ## Gallery
 
