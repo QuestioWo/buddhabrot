@@ -111,7 +111,7 @@ int PNGReader::write(Real *fileData) {
     png_bytep *row_pointers;
     row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * windowWidth);
     for (unsigned int i = 0; i < windowWidth; ++i) {
-        row_pointers[i] = (png_byte*) malloc( sizeof(png_byte) * windowWidth * 4);
+        row_pointers[i] = (png_byte*) malloc(sizeof(png_byte) * windowWidth * 4);
 
         png_bytep rpptr = row_pointers[i];
         for (unsigned int j = 0; j < windowWidth; ++j) {
@@ -165,6 +165,11 @@ int PNGReader::write(Real *fileData) {
 
     png_write_image(png_ptr, row_pointers);
     png_write_end(png_ptr, NULL);
+    
+    for (unsigned int i = 0; i < windowWidth; ++i)
+        free(row_pointers[i]);
+    
+    free(row_pointers);
 
     fclose(fp);
     
