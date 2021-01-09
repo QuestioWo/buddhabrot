@@ -14,8 +14,8 @@ The command that can be used for getting this result is `./build/buddhabrot -o -
 ## Running
 
 ### Prerequisites
-* OpenGL
-* GLUT
+* OpenGL (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
+* GLUT (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
 * libpng
 * OpenCL
 
@@ -33,6 +33,8 @@ cd ../
 A OpenGL window titled `Buddhabrot` will appear after the [buddhabrot](https://en.wikipedia.org/wiki/Buddhabrot) has been calculated. Examples of the program running can be found above
 
 Exiting the program can be done by pressing `Ctrl + C` in the same terminal window
+
+If the GPU connected supports double precision, either through the `cl_khr_fp64` or `cl_amd_fp64` additions to the OpenCL install, then using `cmake` with the `-DOPENCL_DOUBLE_PRECISION=ON` argument will enable the use of double precision floating point numbers when running the program with the `-o` argument. If you are unsure of if your GPU supports double precision, use the `clinfo` command, which should detail whether your GPU does or not.
 
 ### Iteration Groups
 
