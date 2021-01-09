@@ -116,7 +116,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
 
     // Build the program executable for running check kernel
     char compileArgs[256];
-    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
+    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%lu -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -211,6 +211,8 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
         pointsThatEscape[i * 2 + 1] = realy;
     }
     
+    delete[] positionsOfCorrect;
+    
     // use correctly escaping points to find all correctly visited points
     inputCount = pointsThatCorrectlyEscape * 2;
     
@@ -236,6 +238,7 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     
     delete[] pointsThatEscape;
     delete[] interimResultsCount;
+    delete[] counts;
 }
 
 int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength) {
