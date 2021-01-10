@@ -73,18 +73,25 @@ int CSVReader::write(std::vector<std::vector<Cell*>> *fileData) {
     if (!stream)
         return 1;
     
-    stream << "pixel_real,pixel_imag,counter" << std::endl;
+    std::string resultString = "pixel_real,pixel_imag,counter\n";
     
     for (unsigned int i = 0; i < fileData->size(); ++i) {
         for (unsigned int j = 0; j < fileData->at(i).size(); ++j) {
-            stream << std::to_string(fileData->at(i)[j]->complex.real)
-             << ','
-             << std::to_string(fileData->at(i)[j]->complex.imag)
-             << ','
-             << std::to_string((unsigned int)fileData->at(i)[j]->counter)
-             << std::endl;
+            resultString.append(
+                                std::to_string(fileData->at(i)[j]->complex.real) + ',' +
+                                std::to_string(fileData->at(i)[j]->complex.imag) + ',' +
+                                std::to_string((unsigned int)fileData->at(i)[j]->counter) + '\n');
+        }
+        
+        if (i == cellsPerRow / 2) {
+            // write and reset to make sure memory doesnt get higher than initial memory steal
+            stream << resultString;
+            
+            resultString.clear();
         }
     }
+    
+    stream << resultString;
     
     stream.close();
     
@@ -109,6 +116,15 @@ int CSVReader::write(Real *fileData) {
                                 std::to_string(fileData[i * cellsPerRow * 3 + j * 3 + 0]) + ',' +
                                 std::to_string(fileData[i * cellsPerRow * 3 + j * 3 + 1]) + ',' +
                                 std::to_string((unsigned int)fileData[i * cellsPerRow * 3 + j * 3 + 2]) + '\n');
+        
+        if (i == cellsPerRow / 2) {
+            // write and reset to make sure memory doesnt get higher than initial memory steal
+            stream << resultString;
+            
+            resultString.clear();
+            
+            resultString.shrink_to_fit();
+        }
     }
     
     stream << resultString;
