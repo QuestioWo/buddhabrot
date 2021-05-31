@@ -7,6 +7,10 @@
 ///
 //===========================================================================//
 
+#ifdef _WIN32
+#define NOMINMAX
+#endif
+
 #include "Cell.hpp"
 #include "KernelHelper.hpp"
 #include "io/PNGReader.hpp"
@@ -22,7 +26,7 @@
     #endif
 #endif
 
-#include <getopt.h>
+#include <algorithm>
 #include <iostream>
 #include <math.h>
 #include <sstream>
@@ -72,7 +76,6 @@ static unsigned int g_maxCount = 0;
 
 int main(int argc, char *argv[]) {
     // parse arguments
-    int option;
     if (argc < 2)
         showUsage(argv[0]);
     
@@ -80,77 +83,60 @@ int main(int argc, char *argv[]) {
     std::string tmp;
     std::stringstream lineStream;
 
-    while((option = getopt(argc, argv, ":ao4s:l:w:p:i:m:c:t:")) != -1) {
-        switch(option) {
-            case 'a' :
-                anti = true;
-                break;
-                
-            case 's' :
-                save = true;
-                saveFileName = std::string(optarg);
-                break;
-                
-            case 'l' :
-                load = true;
-                loadFileName = std::string(optarg);
-                useGpu = true;
-                break;
+    for (int i = 1; i < argc; ++i) {
+        if (!strcmp(argv[i], "-a")) {
+            anti = true;
+            break;
+        } else if (!strcmp(argv[i], "-s")) {
+            save = true;
+            saveFileName = std::string(argv[++i]);
+            break;
+        } else if (!strcmp(argv[i], "-l")) {
+            load = true;
+            loadFileName = std::string(argv[++i]);
+            useGpu = true;
+            break;
+        } else if (!strcmp(argv[i], "-4")) {
+            alpha = true;
+            break;
+        } else if (!strcmp(argv[i], "-o")) {
+            useGpu = true;
+            break;
+        } else if (!strcmp(argv[i], "-w")) {
+            windowWidth = std::stoi(argv[++i]);
+            cellsPerRow = windowWidth;
+            break;
+        } else if (!strcmp(argv[i], "-p")) {
+            cellsPerRow = std::stoi(argv[++i]);
+            break;
+        } else if (!strcmp(argv[i], "-i")) {
+            iterations = std::stoi(argv[++i]);
+            break;
+        } else if (!strcmp(argv[i], "-m")) {
+            iterationsMax = std::stoi(argv[++i]);
+            break;
+        } else if (!strcmp(argv[i], "-c")) {
+            lineStream = std::stringstream(std::string(argv[++i]));
             
-            case '4' :
-                alpha = true;
-                break;
+            std::getline(lineStream, tmp, ',');
+            colourR = (unsigned char)std::stoi(tmp);
             
-            case 'o' :
-                useGpu = true;
-                break;
-                
-            case 'w' :
-                windowWidth = std::stoi(optarg);
-                cellsPerRow = windowWidth;
-                break;
-                
-            case 'p' :
-                cellsPerRow = std::stoi(optarg);
-                break;
-                
-            case 'i' :
-                iterations = std::stoi(optarg);
-                break;
+            std::getline(lineStream, tmp, ',');
+            colourG = (unsigned char)std::stoi(tmp);
             
-            case 'm' :
-                iterationsMax = std::stoi(optarg);
-                break;
-                
-            case 'c' :
-                lineStream = std::stringstream(std::string(optarg));
-                
-                std::getline(lineStream, tmp, ',');
-                colourR = (unsigned char)std::stoi(tmp);
-                
-                std::getline(lineStream, tmp, ',');
-                colourG = (unsigned char)std::stoi(tmp);
-                
-                std::getline(lineStream, tmp, ',');
-                colourB = (unsigned char)std::stoi(tmp);
-                break;
-                
-            case 't' :
-                numThreads = (unsigned char)std::stoi(optarg);
-                break;
-                
-            case ':' :
-                std::cout << ("Option needs a value") << std::endl;
-                break;
-                
-            case '?' :
-                if (optopt == 'h') {
-                    showUsage(argv[0]);
-                    return -1;
-                }
-                printf("Unknown option: %c\n", optopt);
-                showUsage(argv[0]);
-                break;
+            std::getline(lineStream, tmp, ',');
+            colourB = (unsigned char)std::stoi(tmp);
+            break;
+        } else if (!strcmp(argv[i], "-t")) {
+            numThreads = (unsigned char)std::stoi(argv[++i]);
+            break;
+        } else if (!strcmp(argv[i], "-h")) {
+            showUsage(argv[0]);
+            return -1;
+        } else {
+            printf("Unknown option: %c\n", argv[i]);
+            showUsage(argv[0]);
+            break;
         }
     }
     

@@ -1,0 +1,11 @@
+{
+    "cmake.configureOnOpen": true,
+    "cmake.configureArgs": [
+        "-DUSE_OPENGL=OFF",
+        "-DOPENCL_DOUBLE_PRECISION=ON"
+    ],
+    "cmake.preferredGenerators": [
+        "Visual Studio 15 2017", // for windows
+        "Unix Makefiles" // for macOS and Linux
+    ]
+}

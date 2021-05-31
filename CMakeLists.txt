@@ -7,7 +7,7 @@ add_compile_options( -std=c++11 )
 # Linux specific requirements for threading
 if (UNIX)
 	set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 	set(CMAKE_HAVE_THREADS_LIBRARY 1)
 	set(CMAKE_USE_WIN32_THREADS_INIT 0)
 	set(CMAKE_USE_PTHREADS_INIT 1)
@@ -54,10 +54,15 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
 # Build Application
+if (WIN32)
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MD")
+endif (WIN32)
+
 add_executable( ${PROJECT_NAME}
 	${SOURCE_FILES}
 	${HEADER_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${OpenCL_LIBRARIES} ${PNG_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OpenCL_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCL_LIBRARIES} ${PNG_LIBRARIES})
