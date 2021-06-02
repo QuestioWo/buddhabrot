@@ -54,10 +54,7 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
 # Build Application
-if (WIN32)
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MD")
-endif (WIN32)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
 add_executable( ${PROJECT_NAME}
 	${SOURCE_FILES}

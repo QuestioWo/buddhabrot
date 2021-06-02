@@ -26,48 +26,12 @@
                 "MIMode": "gdb"
             }
         },
-        {
-            "name": "Test Debugging Launch",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/buddhabrotTest.exe",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "internalConsole",
-            "osx": {
-                "console": "externalTerminal",
-                "MIMode": "lldb"
-            },
-            "linux": {
-                "MIMode": "gdb"
-            },
-            "windows": {
-                "MIMode": "gdb"
-            }
-        },
-
         // Release configs
         {
             "name": "Main Release Launch",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Release/buddhabrot.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "internalConsole",
-            "osx": {
-                "console": "externalTerminal"
-            }
-        },
-        {
-            "name": "Test Release Launch",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Release/buddhabrotTest.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

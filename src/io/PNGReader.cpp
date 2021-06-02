@@ -16,7 +16,8 @@
 #include <math.h>
 
 int PNGReader::write(std::vector<std::vector<Cell*>> *fileData) {
-    FILE *fp = fopen(fname, "wb");
+    FILE *fp;
+    fopen_s(&fp, fname, "wb");
     png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
     png_infop info_ptr = png_create_info_struct(png_ptr);
     png_init_io(png_ptr, fp);
