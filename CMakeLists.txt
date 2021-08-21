@@ -21,6 +21,10 @@ else ()
 endif (APPLE)
 option(OPENCL_DOUBLE_PRECISION "Uses double precision for GPU processing of fractal. Use clinfo to check if GPU has either cl_khr_fp64 or cl_amd_fp64 extensions before enabling" OFF)
 
+# Find OpenCV for image writing
+find_package(OpenCV REQUIRED)
+message(STATUS "OpenCV_FOUND := TRUE")
+
 # Find OpenGL and GLUT
 if (USE_OPENGL)
 	find_package(OpenGL REQUIRED)
@@ -42,10 +46,6 @@ if (OPENCL_DOUBLE_PRECISION)
 else ()
 	add_compile_options( -DDOUBLE_SUPPORT_AVAILABLE=false )
 endif (OPENCL_DOUBLE_PRECISION)
-
-# Find OpenCV for image writing
-find_package(OpenCV REQUIRED)
-message(STATUS "OpenCV_FOUND := TRUE")
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 

@@ -11,10 +11,11 @@ env:
 
 jobs:
   build:
-    runs-on: pachyderm/opencv:latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+    - uses: docker://julianassmann/opencv-cuda:cuda-10.2-opencv-4.3-devel
 
     - name: Configure CMake
       run: |
