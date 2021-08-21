@@ -85,44 +85,68 @@ int main(int argc, char* argv[]) {
     std::stringstream lineStream;
 
     for (int i = 1; i < argc; ++i) {
-        if (!strcmp(argv[i], "-a")) {
-            anti = true;
-        } else if (!strcmp(argv[i], "-s")) {
-            save = true;
-            saveFileName = std::string(argv[++i]);
-        } else if (!strcmp(argv[i], "-l")) {
-            load = true;
-            loadFileName = std::string(argv[++i]);
-            useGpu = true;
-        } else if (!strcmp(argv[i], "-4")) {
-            alpha = true;
-        } else if (!strcmp(argv[i], "-o")) {
-            useGpu = true;
-        } else if (!strcmp(argv[i], "-w")) {
-            windowWidth = std::stoi(argv[++i]);
-        } else if (!strcmp(argv[i], "-i")) {
-            iterations = std::stoi(argv[++i]);
-        } else if (!strcmp(argv[i], "-m")) {
-            iterationsMax = std::stoi(argv[++i]);
-        } else if (!strcmp(argv[i], "-c")) {
-            lineStream = std::stringstream(std::string(argv[++i]));
+        switch(argv[i][1]) {
+            case 'a' :
+                anti = true;
+                break;
 
-            std::getline(lineStream, tmp, ',');
-            colourR = (unsigned char)std::stoi(tmp);
+            case 's' :
+                save = true;
+                saveFileName = std::string(argv[++i]);
+                break;
 
-            std::getline(lineStream, tmp, ',');
-            colourG = (unsigned char)std::stoi(tmp);
+            case 'l' :
+                load = true;
+                loadFileName = std::string(argv[++i]);
+                useGpu = true;
+                break;
 
-            std::getline(lineStream, tmp, ',');
-            colourB = (unsigned char)std::stoi(tmp);
-        } else if (!strcmp(argv[i], "-t")) {
-            numThreads = (unsigned char)std::stoi(argv[++i]);
-        } else if (!strcmp(argv[i], "-h")) {
-            showUsage(argv[0]);
-            return -1;
-        } else {
-            printf("Unknown option: %s\n", argv[i]);
-            showUsage(argv[0]);
+            case '4' :
+                alpha = true;
+                break;
+
+            case 'o' :
+                useGpu = true;
+                break;
+
+            case 'w' :
+                windowWidth = std::stoi(argv[++i]);
+                break;
+
+            case 'i' :
+                iterations = std::stoi(argv[++i]);
+                break;
+
+            case 'm' :
+                iterationsMax = std::stoi(argv[++i]);
+                break;
+
+            case 'c' :
+                lineStream = std::stringstream(std::string(argv[++i]));
+
+                std::getline(lineStream, tmp, ',');
+                colourR = (unsigned char)std::stoi(tmp);
+
+                std::getline(lineStream, tmp, ',');
+                colourG = (unsigned char)std::stoi(tmp);
+
+                std::getline(lineStream, tmp, ',');
+                colourB = (unsigned char)std::stoi(tmp);
+                break;
+
+            case 't' :
+                numThreads = (unsigned char)std::stoi(argv[++i]);
+                break;
+
+            case 'h' :
+                showUsage(argv[0]);
+                return -1;
+                break;
+
+            default :
+                printf("Unknown option: %s\n", argv[i]);
+                showUsage(argv[0]);
+                break;
         }
     }
 

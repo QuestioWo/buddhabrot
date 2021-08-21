@@ -9,8 +9,6 @@
         "Unix Makefiles" // for macOS and Linux
     ],
     "C_Cpp.dimInactiveRegions": false,
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
     "editor.insertSpaces": false,
     "editor.minimap.maxColumn": 200000,
     "files.eol": "\n",
@@ -18,5 +16,6 @@
     "files.trimFinalNewlines": true,
     "C_Cpp.formatting": "vcFormat",
     "C_Cpp.vcFormat.newLine.beforeElse": false,
-    "C_Cpp.vcFormat.newLine.beforeCatch": false
+    "C_Cpp.vcFormat.newLine.beforeCatch": false,
+    "C_Cpp.errorSquiggles": "Disabled"
 }
