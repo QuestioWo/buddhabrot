@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: docker://toshi38/opencv-builder:latest
+    - uses: docker://julianassmann/opencv-cuda:cuda-10.2-opencv-4.3-devel
 
     - name: Configure CMake
       run: |
