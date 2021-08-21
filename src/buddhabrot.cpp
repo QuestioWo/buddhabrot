@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
             showUsage(argv[0]);
             return -1;
         } else {
-            printf("Unknown option: %c\n", argv[i]);
+            printf("Unknown option: %s\n", argv[i]);
             showUsage(argv[0]);
         }
     }

@@ -12,33 +12,33 @@
 #include <iostream>
 #include <math.h>
 
-static Real **g_cellsGPU;
-static unsigned int *g_maxCount;
+static Real** g_cellsGPU;
+static unsigned int* g_maxCount;
 static std::pair<Real, Real> MIN_GPU;
 static Real cellRealWidth;
 static unsigned long int count;
 static unsigned long int inputCount;
 static unsigned int cellsPerRow;
 
-void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *iterations, unsigned int *cellsPerRowPassed, const std::pair<long double, long double> *min, long double *cellRealWidthPassed, bool *anti, unsigned int *iterationsMax) {
+void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* iterations, unsigned int* cellsPerRowPassed, const std::pair<long double, long double>* min, long double* cellRealWidthPassed, bool* anti, unsigned int* iterationsMax) {
     printf("Using %d-bit (%s) floating point precision\n", PRECISION, PRECISION == 64 ? "double" : "float");
-    
+
     g_cellsGPU = cellsGPU;
     g_maxCount = maxCount;
     cellsPerRow = *cellsPerRowPassed;
-    
-    count = cellsPerRow * cellsPerRow;
+
+    count = static_cast<unsigned int>(cellsPerRow) * cellsPerRow;
     inputCount = count * 2;
-    
+
     if (*iterationsMax == 0) {
         *iterationsMax = 3.28E11 * pow(cellsPerRow, -2.06);
-        
+
         if (*anti)
             *iterationsMax = ceil(*iterationsMax / 8);
     }
-    
+
     std::cout << "Iterations per group := " << *iterationsMax << std::endl;
-    
+
     // 1000-500 maximum for 6001
     // ~5500 maximum for 2001
     // >7500 maximum for 501
@@ -50,12 +50,12 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     cl_kernel kernelCheck;
     cl_kernel kernelCount;
     cl_program program;
-    
+
     cl_int err;
 
     (*g_cellsGPU) = new Real[count * 3];
-    Real *originalCells = new Real[inputCount];
-    Real *interimResultsCheck = new Real[inputCount]();
+    Real* originalCells = new Real[inputCount];
+    Real* interimResultsCheck = new Real[inputCount]();
 
     cellRealWidth = (Real)*cellRealWidthPassed;
     MIN_GPU = { (Real)min->first, (Real)min->second };
@@ -64,16 +64,16 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
         for (unsigned int j = 0; j < cellsPerRow; ++j) {
             Real realx = MIN_GPU.first + cellRealWidth * (cellsPerRow - 1 - i); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
             Real realy = MIN_GPU.second + cellRealWidth * j;
-            
+
             (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 0] = realx;
             (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 1] = realy;
             (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2] = 0;
-            
+
             originalCells[i * cellsPerRow * 2 + j * 2 + 0] = realx;
             originalCells[i * cellsPerRow * 2 + j * 2 + 1] = realy;
         }
     }
-    
+
     cl_uint numPlatforms;
     err = clGetPlatformIDs(1, &platformId, &numPlatforms);
     if (err != CL_SUCCESS) {
@@ -100,14 +100,14 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
     }
 
     size_t length = 0;
-    char *source;
+    char* source;
     err = loadTextFromFile(KERNEL_FILENAME, &source, &length);
     if (err != 0) {
         std::cout << "Failed to load kernel source. Check where program is executed from, must be able to see src/, which contains EscapeKernel.cl" << std::endl;
         exit(1);
     }
 
-    program = clCreateProgramWithSource(context, 1, (const char **) &source, NULL, &err);
+    program = clCreateProgramWithSource(context, 1, (const char**)&source, NULL, &err);
     if (!program || err != CL_SUCCESS) {
         std::cout << "Failed to create program from source. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
@@ -134,52 +134,52 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
         std::cout << "Failed to create check kernel. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
-    
-    cl_uint *pointCorrectlyEscapes = new cl_uint[count];
-    
+
+    cl_uint* pointCorrectlyEscapes = new cl_uint[count];
+
     std::cout << "Memory successfully yoinked" << std::endl;
-    
+
     const unsigned int iterationGroups = *iterations / *iterationsMax;
     const unsigned int iterationFinal = *iterations - *iterationsMax * iterationGroups;
     bool extraGroup = *iterations > (*iterationsMax * iterationGroups);
-    
+
     // check which coords have to be ran to find correct buddhabrot
     for (unsigned int i = 0; i < iterationGroups; ++i) {
         runKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, iterationsMax, false);
-        
+
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
-    
+
     if (extraGroup) {
         runKernel(&context, &commands, &kernelCheck, &deviceId, &originalCells, &interimResultsCheck, &pointCorrectlyEscapes, &iterationFinal, false);
-        
+
         std::cout << '\t' << iterationGroups << '/' << iterationGroups << std::endl;
     }
-    
+
     clReleaseKernel(kernelCheck);
     delete[] interimResultsCheck;
     delete[] originalCells;
-    
+
     // Build the program executable for running count kernel
     unsigned int pointsThatCorrectlyEscape = 0;
-    
-    cl_uint *positionsOfCorrect = new cl_uint[inputCount];
-    
+
+    cl_uint* positionsOfCorrect = new cl_uint[inputCount];
+
     for (unsigned int i = 0; i < cellsPerRow; ++i) {
         for (unsigned int j = 0; j < cellsPerRow; ++j) {
             if (pointCorrectlyEscapes[i * cellsPerRow + j]) {
                 pointsThatCorrectlyEscape += 1;
-                
+
                 positionsOfCorrect[pointsThatCorrectlyEscape * 2 + 0] = i;
                 positionsOfCorrect[pointsThatCorrectlyEscape * 2 + 1] = j;
             }
         }
     }
-    
+
     delete[] pointCorrectlyEscapes;
-    
+
     std::cout << "Correctly escaping points found := " << pointsThatCorrectlyEscape << '/' << count << std::endl;
-    
+
     sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=false", cellsPerRow, pointsThatCorrectlyEscape, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
@@ -192,62 +192,62 @@ void calculateCells(Real **cellsGPU, unsigned int *maxCount, unsigned int *itera
         std::cout << buffer << std::endl;
         exit(1);
     }
-    
+
     kernelCount = clCreateKernel(program, KERNEL_FUNCTION_NAME, &err);
     if (!kernelCount || err != CL_SUCCESS) {
         std::cout << "Failed to create count kernel. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
-    
+
     // make new interim results with only those that escape
-    Real *pointsThatEscape = new Real[pointsThatCorrectlyEscape * 2];
-    Real *interimResultsCount = new Real[pointsThatCorrectlyEscape * 2]();
-    
+    Real* pointsThatEscape = new Real[pointsThatCorrectlyEscape * 2];
+    Real* interimResultsCount = new Real[pointsThatCorrectlyEscape * 2]();
+
     for (unsigned int i = 0; i < pointsThatCorrectlyEscape; ++i) {
         Real realx = MIN_GPU.first + cellRealWidth * (cellsPerRow - 1 - positionsOfCorrect[i * 2 + 0]); // inverting iteration through cells on the x-axis so that the buddhabrot renders "sitting-down" -- more picturesque
         Real realy = MIN_GPU.second + cellRealWidth * positionsOfCorrect[i * 2 + 1];
-        
+
         pointsThatEscape[i * 2 + 0] = realx;
         pointsThatEscape[i * 2 + 1] = realy;
     }
-    
+
     delete[] positionsOfCorrect;
-    
+
     // use correctly escaping points to find all correctly visited points
     inputCount = pointsThatCorrectlyEscape * 2;
-    
-    cl_uint *counts = new cl_uint[count];
-    
+
+    cl_uint* counts = new cl_uint[count];
+
     for (unsigned int i = 0; i < iterationGroups; ++i) {
         runKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, &counts, iterationsMax, true);
-        
+
         std::cout << '\t' << i << '/' << (extraGroup ? iterationGroups : (iterationGroups - 1)) << std::endl;
     }
-    
+
     if (extraGroup) {
         runKernel(&context, &commands, &kernelCount, &deviceId, &pointsThatEscape, &interimResultsCount, &counts, &iterationFinal, true);
-        
+
         std::cout << '\t' << iterationGroups << '/' << iterationGroups << std::endl;
     }
-    
+
     clReleaseProgram(program);
     clReleaseKernel(kernelCount);
     clReleaseCommandQueue(commands);
     clReleaseContext(context);
     clReleaseDevice(deviceId);
-    
+
     delete[] pointsThatEscape;
     delete[] interimResultsCount;
     delete[] counts;
 }
 
-int loadTextFromFile(const char *filename, char **fileString, size_t *stringLength) {
+int loadTextFromFile(const char* filename, char** fileString, size_t* stringLength) {
     size_t length = 0;
-    
+
     std::string p(filename);
-    
-    FILE *file = fopen(p.c_str(), "rb");
-    if(file == NULL) {
+
+    FILE* file = fopen(p.c_str(), "rb");
+    if (file == NULL) {
         std::cout << "Error: Couldn't read the program file" << std::endl;
         return 1;
     }
@@ -258,20 +258,20 @@ int loadTextFromFile(const char *filename, char **fileString, size_t *stringLeng
     (*fileString)[length] = '\0';
     fread(*fileString, sizeof(char), length, file);
     fclose(file);
-    
+
     *stringLength = length;
-    
+
     return 0;
 }
 
-void runKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kernel, cl_device_id *deviceId, Real **originalPoints, Real **interimResults, cl_uint **pointCorrectlyEscapes, const unsigned int *iterations, bool countKernel) {
+void runKernel(cl_context* context, cl_command_queue* commands, cl_kernel* kernel, cl_device_id* deviceId, Real** originalPoints, Real** interimResults, cl_uint** pointCorrectlyEscapes, const unsigned int* iterations, bool countKernel) {
     size_t global;
     size_t local;
-    
+
     // Create the input and output arrays in device memory for our calculation
     cl_mem inputOriginal = clCreateBuffer(*context, CL_MEM_READ_ONLY, sizeof(Real) * inputCount, NULL, NULL);
     cl_mem inputCurrent = clCreateBuffer(*context, CL_MEM_READ_ONLY, sizeof(Real) * inputCount, NULL, NULL);
-    
+
     cl_mem interimResultsGPU = clCreateBuffer(*context, CL_MEM_WRITE_ONLY, sizeof(Real) * inputCount, NULL, NULL);
     cl_mem output = clCreateBuffer(*context, CL_MEM_WRITE_ONLY, sizeof(cl_uint) * count, NULL, NULL);
     if (!inputOriginal || !inputCurrent || !interimResultsGPU || !output) {
@@ -285,7 +285,7 @@ void runKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kerne
         std::cout << "Failed to write to source array. Check OpenCL install or use without -o option" << std::endl;
         exit(1);
     }
-    
+
     // Set the arguments to our compute kernel
     err = 0;
     err = clSetKernelArg(*kernel, 0, sizeof(cl_mem), &inputOriginal);
@@ -296,7 +296,7 @@ void runKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kerne
     err |= clSetKernelArg(*kernel, 5, sizeof(cl_uint), iterations);
     err |= clSetKernelArg(*kernel, 6, sizeof(cl_mem), &interimResultsGPU);
     err |= clSetKernelArg(*kernel, 7, sizeof(cl_mem), &output);
-    
+
     if (err != CL_SUCCESS) {
         std::cout << "Failed to set kernel arguments: " << err << std::endl;
         exit(1);
@@ -328,17 +328,17 @@ void runKernel(cl_context *context, cl_command_queue *commands, cl_kernel *kerne
         std::cout << "Error: Failed to read output array: " << err << std::endl;
         exit(1);
     }
-    
+
     clReleaseMemObject(inputOriginal);
     clReleaseMemObject(inputCurrent);
     clReleaseMemObject(interimResultsGPU);
     clReleaseMemObject(output);
-    
+
     if (countKernel) {
         for (unsigned int i = 0; i < cellsPerRow; ++i) {
             for (unsigned int j = 0; j < cellsPerRow; ++j) {
                 (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2] += (Real)(*pointCorrectlyEscapes)[i * cellsPerRow + j];
-                
+
                 if ((*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2] > *g_maxCount)
                     *g_maxCount = (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2];
             }
