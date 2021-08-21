@@ -9,6 +9,8 @@
 
 #include "../Cell.hpp"
 
+#include <string>
+
 #ifndef CSVReader_hpp
 #define CSVReader_hpp
 
@@ -22,11 +24,11 @@
 
 class CSVReader {
 private:
-    char *fname;
+    std::string fname;
     unsigned int cellsPerRow;
     
 public:
-    CSVReader(char *fname, unsigned int cellsPerRow) : fname(fname), cellsPerRow(cellsPerRow) {};
+    CSVReader(std::string fname, unsigned int cellsPerRow) : fname(fname), cellsPerRow(cellsPerRow) {};
 
     Real *read();
     int write(std::vector<std::vector<Cell*>> *fileData);
