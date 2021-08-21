@@ -11,7 +11,8 @@
 # Misc.
 .DS_Store
 run*.*
-.vscode/*.json
+*.csv
+*.png
 
 # Final
 !.gitignore

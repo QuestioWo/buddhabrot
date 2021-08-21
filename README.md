@@ -16,7 +16,7 @@ The command that can be used for getting this result is `./build/buddhabrot -o -
 ### Prerequisites
 * OpenGL (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
 * GLUT (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
-* libpng
+* OpenCV
 * OpenCL
 
 ### Building & Usage

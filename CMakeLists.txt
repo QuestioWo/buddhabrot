@@ -14,7 +14,11 @@ if (UNIX)
 	set(THREADS_PREFER_PTHREAD_FLAG ON)
 endif(UNIX)
 
-option(USE_OPENGL "Build to be able to use the OpenGL and GLUT libraries" ON)
+if (APPLE)
+	option(USE_OPENGL "Build to be able to use the OpenGL and GLUT libraries" ON)
+else ()
+	set(USE_OPENGL OFF)
+endif (APPLE)
 option(OPENCL_DOUBLE_PRECISION "Uses double precision for GPU processing of fractal. Use clinfo to check if GPU has either cl_khr_fp64 or cl_amd_fp64 extensions before enabling" OFF)
 
 # Find OpenGL and GLUT
@@ -31,7 +35,7 @@ endif (USE_OPENGL)
 
 # Find OpenCL
 find_package(OpenCL 1.2 REQUIRED)
-message(STATUS "OPENCL_FOUND := TRUE")
+message(STATUS "OpenCL_FOUND := TRUE")
 
 if (OPENCL_DOUBLE_PRECISION)
 	add_compile_options( -DDOUBLE_SUPPORT_AVAILABLE=true )
@@ -39,9 +43,9 @@ else ()
 	add_compile_options( -DDOUBLE_SUPPORT_AVAILABLE=false )
 endif (OPENCL_DOUBLE_PRECISION)
 
-# Find libpng using PkgConfig
-find_package(PNG REQUIRED)
-message(STATUS "PNG_FOUND := TRUE")
+# Find OpenCV for image writing
+find_package(OpenCV REQUIRED)
+message(STATUS "OpenCV_FOUND := TRUE")
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 
@@ -54,12 +58,10 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
 # Build Application
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-
 add_executable( ${PROJECT_NAME}
 	${SOURCE_FILES}
 	${HEADER_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OpenCL_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCL_LIBRARIES} ${PNG_LIBRARIES})
+include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OpenCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCL_LIBRARIES} ${OpenCV_LIBS})
