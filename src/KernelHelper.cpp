@@ -116,7 +116,7 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
 
     // Build the program executable for running check kernel
     char compileArgs[256];
-    sprintf_s(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%lu -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
+    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%lu -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -180,7 +180,7 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
 
     std::cout << "Correctly escaping points found := " << pointsThatCorrectlyEscape << '/' << count << std::endl;
 
-    sprintf_s(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=false", cellsPerRow, pointsThatCorrectlyEscape, (cl_uint)*anti, *iterationsMax);
+    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=false", cellsPerRow, pointsThatCorrectlyEscape, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -246,8 +246,7 @@ int loadTextFromFile(const char* filename, char** fileString, size_t* stringLeng
 
     std::string p(filename);
 
-    FILE* file;
-    fopen_s(&file, p.c_str(), "rb");
+    FILE* file = fopen(p.c_str(), "rb");
     if (file == NULL) {
         std::cout << "Error: Couldn't read the program file" << std::endl;
         return 1;
