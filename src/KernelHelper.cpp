@@ -27,14 +27,14 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
     g_maxCount = maxCount;
     cellsPerRow = *cellsPerRowPassed;
 
-    count = (unsigned int)(cellsPerRow) * (unsigned int)(cellsPerRow);
+    count = (unsigned long int) cellsPerRow * cellsPerRow;
     inputCount = count * 2;
 
     if (*iterationsMax == 0) {
-        *iterationsMax = 3.28E11 * pow(cellsPerRow, -2.06);
+        *iterationsMax = (unsigned int)(3.28E11 * pow(cellsPerRow, -2.06));
 
         if (*anti)
-            *iterationsMax = ceil(*iterationsMax / 8);
+            *iterationsMax = (unsigned int) ceil(*iterationsMax / 8);
     }
 
     std::cout << "Iterations per group := " << *iterationsMax << std::endl;
@@ -116,7 +116,7 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
 
     // Build the program executable for running check kernel
     char compileArgs[256];
-    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%lu -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
+    sprintf_s(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%lu -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=true", cellsPerRow, count, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -180,7 +180,7 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
 
     std::cout << "Correctly escaping points found := " << pointsThatCorrectlyEscape << '/' << count << std::endl;
 
-    sprintf(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=false", cellsPerRow, pointsThatCorrectlyEscape, (cl_uint)*anti, *iterationsMax);
+    sprintf_s(compileArgs, "-D CELLS_PER_ROW=%d -D CELLS_CURRENT=%d -D ANTI=%d -D ITERATIONS_MAX=%d -D CHECK=false", cellsPerRow, pointsThatCorrectlyEscape, (cl_uint)*anti, *iterationsMax);
 
     err = clBuildProgram(program, 1, &deviceId, compileArgs, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -246,7 +246,8 @@ int loadTextFromFile(const char* filename, char** fileString, size_t* stringLeng
 
     std::string p(filename);
 
-    FILE* file = fopen(p.c_str(), "rb");
+    FILE* file;
+    fopen_s(&file, p.c_str(), "rb");
     if (file == NULL) {
         std::cout << "Error: Couldn't read the program file" << std::endl;
         return 1;
@@ -312,7 +313,7 @@ void runKernel(cl_context* context, cl_command_queue* commands, cl_kernel* kerne
     if ((inputCount / 2) % local == 0)
         global = (inputCount / 2);
     else
-        global = (floor((inputCount / 2) / local) + 1) * local;
+        global = (size_t)(floor((inputCount / 2) / local) + 1) * local;
 
     err = clEnqueueNDRangeKernel(*commands, *kernel, 1, NULL, &global, &local, 0, NULL, NULL);
     if (err) {
@@ -340,7 +341,7 @@ void runKernel(cl_context* context, cl_command_queue* commands, cl_kernel* kerne
                 (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2] += (Real)(*pointCorrectlyEscapes)[i * cellsPerRow + j];
 
                 if ((*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2] > *g_maxCount)
-                    *g_maxCount = (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2];
+                    *g_maxCount = (unsigned int) (*g_cellsGPU)[i * cellsPerRow * 3 + j * 3 + 2];
             }
         }
     }
