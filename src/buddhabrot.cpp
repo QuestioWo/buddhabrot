@@ -28,6 +28,7 @@
 #endif
 
 #include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <math.h>
 #include <sstream>
