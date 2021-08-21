@@ -27,7 +27,7 @@ void calculateCells(Real** cellsGPU, unsigned int* maxCount, unsigned int* itera
     g_maxCount = maxCount;
     cellsPerRow = *cellsPerRowPassed;
 
-    count = (unsigned int) cellsPerRow * cellsPerRow;
+    count = (unsigned int)(cellsPerRow) * (unsigned int)(cellsPerRow);
     inputCount = count * 2;
 
     if (*iterationsMax == 0) {
