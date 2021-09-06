@@ -7,7 +7,7 @@
 ///
 //===========================================================================//
 
-#include "KernelHelper.hpp"
+#include "OpenCLKernelHelper.hpp"
 
 #include <iostream>
 #include <math.h>

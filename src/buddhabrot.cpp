@@ -13,7 +13,8 @@
 #endif
 
 #include "Cell.hpp"
-#include "KernelHelper.hpp"
+#include "OpenCLKernelHelper.hpp"
+// #include "CUDAKernelHelper.hpp"
 #include "io/PNGWriter.hpp"
 #include "io/CSVReader.hpp"
 
