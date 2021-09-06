@@ -11,6 +11,8 @@
 # Misc.
 .DS_Store
 run*.*
+*.csv
+*.png
 
 # Final
 !.gitignore

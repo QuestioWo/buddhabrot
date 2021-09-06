@@ -1,3 +1,5 @@
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/QuestioWo/buddhabrot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/QuestioWo/buddhabrot/context:cpp)
+
 ## Renders
 Render produced for 2001 x 2001 pixels at 2500 iterations :
 
@@ -16,7 +18,7 @@ The command that can be used for getting this result is `./build/buddhabrot -o -
 ### Prerequisites
 * OpenGL (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
 * GLUT (optional with `-DUSE_OPENGL=OFF` argument for `cmake`)
-* libpng
+* OpenCV
 * OpenCL
 
 ### Building & Usage

@@ -1,0 +1,31 @@
+{
+	"cmake.configureOnOpen": true,
+	"cmake.configureArgs": [
+		"-DUSE_OPENGL=OFF",
+		"-DOPENCL_DOUBLE_PRECISION=ON",
+		"-A'x86'"
+	],
+	"cmake.preferredGenerators": [
+		"Visual Studio 15 2017", // for windows
+		"Unix Makefiles" // for macOS and Linux
+	],
+	"C_Cpp.dimInactiveRegions": false,
+	"editor.insertSpaces": false,
+	"editor.minimap.maxColumn": 200000,
+	"files.eol": "\n",
+	"files.trimTrailingWhitespace": true,
+	"files.trimFinalNewlines": true,
+	"C_Cpp.formatting": "vcFormat",
+	"C_Cpp.vcFormat.newLine.beforeElse": false,
+	"C_Cpp.vcFormat.newLine.beforeCatch": false,
+	"C_Cpp.errorSquiggles": "Disabled",
+	"C_Cpp.vcFormat.newLine.beforeOpenBrace.namespace": "sameLine",
+	"C_Cpp.vcFormat.newLine.beforeOpenBrace.type": "sameLine",
+	"C_Cpp.vcFormat.newLine.beforeOpenBrace.lambda": "sameLine",
+	"C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+	"C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+	"C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true,
+	"C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyType": true,
+	"C_Cpp.vcFormat.newLine.scopeBracesOnSeparateLines": true,
+	"C_Cpp.clang_format_fallbackStyle": "none"
+}
