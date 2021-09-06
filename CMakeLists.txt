@@ -17,6 +17,10 @@ endif(UNIX)
 option(USE_OPENGL "Build to be able to use the OpenGL and GLUT libraries" ON)
 option(OPENCL_DOUBLE_PRECISION "Uses double precision for GPU processing of fractal. Use clinfo to check if GPU has either cl_khr_fp64 or cl_amd_fp64 extensions before enabling" OFF)
 
+message( "Compiling with options:" )
+message( "\tUSE_OPENGL := " ${USE_OPENGL} )
+message( "\tOPENCL_DOUBLE_PRECISION := " ${OPENCL_DOUBLE_PRECISION} )
+
 # Find OpenGL and GLUT
 if (USE_OPENGL)
 	find_package(OpenGL REQUIRED)
