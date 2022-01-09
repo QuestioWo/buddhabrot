@@ -1,3 +1,12 @@
+##===========================================================================##
+###
+### Copyright Jim Carty © 2020-2021
+###
+### This file is subject to the terms and conditions defined in file
+### 'LICENSE.txt', which is part of this source code package.
+###
+##===========================================================================##
+
 cmake_minimum_required( VERSION 3.0.2 )
 
 project( buddhabrot )
@@ -51,13 +60,22 @@ endif (OPENCL_DOUBLE_PRECISION)
 find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV_FOUND := TRUE")
 
+# Find GoogleTest
+find_package(GTest REQUIRED)
+message(STATUS "GTest Found := TRUE")
+
 # Add source files
-file(GLOB_RECURSE SOURCE_FILES 
-	${CMAKE_SOURCE_DIR}/src/*.c
+file(GLOB_RECURSE SOURCE_FILES
 	${CMAKE_SOURCE_DIR}/src/*.cpp)
-	
+
+set(TEST_SOURCE_FILES ${SOURCE_FILES})
+list(REMOVE_ITEM TEST_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/buddhabrot.cpp)
+
+file(GLOB_RECURSE TEST_TEST_FILES
+	${CMAKE_SOURCE_DIR}/tests/*.cpp)
+
 # Add header files
-file(GLOB_RECURSE HEADER_FILES 
+file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
@@ -67,5 +85,41 @@ add_executable( ${PROJECT_NAME}
 	${HEADER_FILES}
 )
 
-include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${OpenCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCL_LIBRARIES} ${OpenCV_LIBS})
+include_directories(${PROJECT_NAME}
+PUBLIC
+	${OPENGL_INCLUDE_DIRS}
+	${GLUT_INCLUDE_DIRS}
+	${OpenCL_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+)
+target_link_libraries(${PROJECT_NAME}
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+	${OpenCL_LIBRARIES}
+	${OpenCV_LIBS}
+)
+
+# Build Test Application
+set( PROJECT_NAME_TEST ${PROJECT_NAME}Test )
+add_executable( ${PROJECT_NAME_TEST}
+	${TEST_SOURCE_FILES}
+	${TEST_TEST_FILES}
+	${HEADER_FILES}
+)
+
+include_directories(${PROJECT_NAME_TEST}
+PUBLIC
+	${OPENGL_INCLUDE_DIRS}
+	${GLUT_INCLUDE_DIRS}
+	${OpenCL_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+	${GTest_INCLUDE_DIRS}
+)
+target_link_libraries(${PROJECT_NAME_TEST}
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+	${OpenCL_LIBRARIES}
+	${OpenCV_LIBS}
+	${GTEST_BOTH_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
+)
